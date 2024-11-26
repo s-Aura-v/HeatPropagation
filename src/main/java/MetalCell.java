@@ -1,14 +1,14 @@
 public class MetalCell {
-    int heat_constant;
+    double heat_constant;
     int numberOfNeighbors;
     int temperature;
     boolean border;
 
-    public MetalCell() {
-
+    public MetalCell(double heat_constant) {
+        this.heat_constant = heat_constant;
     }
 
-    public int getHeat_constant() {
+    public double getHeat_constant() {
         return heat_constant;
     }
 
@@ -30,5 +30,10 @@ public class MetalCell {
 
     public void setTemperature(int temperature) {
         this.temperature = temperature;
+    }
+
+    @Override
+    public String toString() {
+        return heat_constant + "";
     }
 }
