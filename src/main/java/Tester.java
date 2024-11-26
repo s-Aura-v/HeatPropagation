@@ -20,13 +20,14 @@ public class Tester {
 //        int dimensionFactor = 9;
         int height = 3;
         int width = height * 4;
-        MetalCell[][] metalAlloy = new MetalCell[height][width];
         int partitionedWidth = ((width) / 2);
+        MetalCell[][] metalAlloy = new MetalCell[height][width];
         MetalCell[][] leftPartition = new MetalCell[height][partitionedWidth];
         MetalCell[][] rightPartition = new MetalCell[height][partitionedWidth];
 
         applyNoise();
         fillMetalAlloy(metalAlloy);
+        splitMetalAlloy(metalAlloy, leftPartition, rightPartition);
     }
 
     /**
@@ -41,6 +42,16 @@ public class Tester {
 //        System.out.println(HC1_COUNT + " " + HC2_COUNT + " " + HC3_COUNT);
     }
 
+    /**
+     * Filling the metal alloy with the metal cells with heat constants. The metal alloys are filled it by column rather than rows.
+     * @param metalAlloy - the 2d array of Metal Cells with no instantiated values
+     * @return metalAlloy - the 2d array of Metal Cells with instantiated values
+     *
+     * Visualization of Metal Alloy :
+     *   0.75	|  0.75	|  0.75	|  0.75	|  0.75	|  1.0	|  1.0	|  1.0	|  1.0	|  1.25	|  1.25	|  1.25
+     *   0.75	|  0.75	|  0.75	|  0.75	|  1.0	|  1.0	|  1.0	|  1.0	|  1.0	|  1.25	|  1.25	|  1.25
+     *   0.75	|  0.75	|  0.75	|  0.75	|  1.0	|  1.0	|  1.0	|  1.0	|  1.25	|  1.25	|  1.25	|  1.25
+     */
     static MetalCell[][] fillMetalAlloy(MetalCell[][] metalAlloy) {
         int HC1_temp = HC1_COUNT;
         int HC2_temp = HC2_COUNT;
@@ -59,9 +70,33 @@ public class Tester {
                 }
             }
         }
-        System.out.println(Arrays.deepToString(metalAlloy)
+        System.out.println("Representation of Metal Alloy\n" + Arrays.deepToString(metalAlloy)
                 .replace("],", "\n").replace(",", "\t| ")
                 .replaceAll("[\\[\\]]", " "));
         return metalAlloy;
+    }
+
+    /**
+     * Partitioning the metalAlloy into 2 halves so it can be worked on in parallel.
+     * @param metalAlloy - the 2d array of Metal Cells with instantiated values
+     * @param leftPartition - the empty left side of metalAlloy
+     * @param rightPartition - the empty right side of metalAlloy
+     * No direct output, but a side effect - the left and right partitioned are filled
+     */
+    static void splitMetalAlloy(MetalCell[][] metalAlloy, MetalCell[][] leftPartition, MetalCell[][] rightPartition) {
+        int midpoint = width / 2;
+        for (int i = 0; i < leftPartition.length; i++) {
+            for (int j = 0; j < leftPartition[0].length; j++) {
+                leftPartition[i][j] = metalAlloy[i][j];
+                rightPartition[i][j] = metalAlloy[i][j + midpoint];
+            }
+        }
+        System.out.println("Representation of Left Partition\n" + Arrays.deepToString(leftPartition)
+                .replace("],", "\n").replace(",", "\t| ")
+                .replaceAll("[\\[\\]]", " "));
+
+        System.out.println("Representation of Right Partition\n" + Arrays.deepToString(rightPartition)
+                .replace("],", "\n").replace(",", "\t| ")
+                .replaceAll("[\\[\\]]", " "));
     }
 }
