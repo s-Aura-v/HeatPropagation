@@ -31,6 +31,7 @@ public class MetalCell {
 
     @Override
     public String toString() {
-        return "" + HC1_PERCENTAGE + ";;" + HC2_PERCENTAGE + ";;" + HC3_PERCENTAGE;
+//        return "" + HC1_PERCENTAGE + ";;" + HC2_PERCENTAGE + ";;" + HC3_PERCENTAGE;
+        return temperature + "";
     }
 }

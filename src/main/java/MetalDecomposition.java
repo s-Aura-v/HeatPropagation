@@ -3,7 +3,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class MetalDecomposition {
 
-    static final boolean debug = true;
+    static final boolean debug = false;
 
     static final double HEATCONSTANT_1 = .75;
     static final double HEATCONSTANT_2 = 1.0;
@@ -31,6 +31,16 @@ public class MetalDecomposition {
 
         MetalAlloy alloy = new MetalAlloy(leftPartition, rightPartition, topLeftTemperature_S, bottomRightTemperature_T);
         alloy.heatMetalAlloy(true);
+
+        if (true) {
+            System.out.println("Representation of Left Partition\n" + Arrays.deepToString(leftPartition)
+                    .replace("],", "\n").replace(",", "\t| ")
+                    .replaceAll("[\\[\\]]", " "));
+
+            System.out.println("Representation of Right Partition\n" + Arrays.deepToString(rightPartition)
+                    .replace("],", "\n").replace(",", "\t| ")
+                    .replaceAll("[\\[\\]]", " "));
+        }
     }
 
     /**

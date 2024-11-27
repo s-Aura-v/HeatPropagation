@@ -35,35 +35,43 @@ public class MetalAlloy extends RecursiveTask<Double> {
      */
     void heatMetalAlloy(boolean topLeft) {
         double[] listOfTemperatures = new double[3];
-        MetalAlloy rightPartition = new MetalAlloy(leftPartition, leftPartition, topLeftTemperature_S, bottomRightTemperature_T);
-        rightPartition.fork();
-        if (topLeft) {
+//        MetalAlloy rightPartition = new MetalAlloy(leftPartition, leftPartition, topLeftTemperature_S, bottomRightTemperature_T);
+//        rightPartition.fork();
+//        if (topLeft) {
+        leftPartition[0][0].setTemperature(topLeftTemperature_S);
+        rightPartition[rightPartition.length - 1][rightPartition[0].length - 1].setTemperature(bottomRightTemperature_T);
             for (int i = 0; i < leftPartition.length; i++) {
                 for (int j = 0; j < leftPartition[0].length; j++) {
                     for (int k = 0; k < 3; k++) {
-                        double temperature = 0;
                         double heatConstant_Cm = leftPartition[i][j].getHeatConstantPercentage(i);
-                        double surroundingTemperature_temp_n = (getNeighboringTemperature(i, j, k));
-//                    double percentageOf
-
-
-                        temperature = 0; // edit this later
-                        listOfTemperatures[i] = temperature;
+                        double surroundingTemperature = (getNeighboringTemperature(i, j, k));
+                        int neighborCount_N = getNeighborCount(i, j);
+                        listOfTemperatures[k] = (heatConstant_Cm * surroundingTemperature)/neighborCount_N;
                     }
                     leftPartition[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                 }
             }
-        } else {
-
-        }
+//        } else {
+            for (int i = 0; i < this.rightPartition.length; i++) {
+                for (int j = 0; j < rightPartition[0].length; j++) {
+                    for (int k = 0; k < 3; k++) {
+                        double heatConstant_Cm = rightPartition[i][j].getHeatConstantPercentage(i);
+                        double surroundingTemperature = (getNeighboringTemperature(i, j, k));
+                        int neighborCount_N = getNeighborCount(i, j);
+                        listOfTemperatures[k] = (heatConstant_Cm * surroundingTemperature)/neighborCount_N;
+                    }
+                    rightPartition[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                }
+            }
+//        }
     }
 
     /**
      * Calculates Sum(n=1 to #ofNeighbors) of (temp_n * p_n_m)
      * Or, calculates the temperature of the neighbors with respect to metal M's heat constant
      *
-     * @param x - x coordinate of the cell in the 2d array
-     * @param y - y coordinate of the cell in the 2d array
+     * @param x      - x coordinate of the cell in the 2d array
+     * @param y      - y coordinate of the cell in the 2d array
      * @param metalM - metal which we are calculating the temperature for
      * @return temperature
      */
@@ -140,5 +148,25 @@ public class MetalAlloy extends RecursiveTask<Double> {
                 northTemp * northMetalMPercentage +
                 northEastTemp * northEastMetalMPercentage;
         return temperature;
+    }
+
+    /**
+     * Get the amount of neighbors a given integer has
+     * @param x - x coordinate of the cell in the 2d array
+     * @param y - y coordinate of the cell in the 2d array
+     * @return neighborCount
+     */
+    int getNeighborCount(int x, int y) {
+        int neighborCount = 8;
+        if (x == 0 || x == leftPartition.length - 1) {
+            neighborCount -= 3;
+        }
+        if (y == 0 || y == leftPartition[0].length - 1) {
+            neighborCount -= 3;
+        }
+        if ((x == 0 && y == 0) || (x == rightPartition.length - 1 && y == rightPartition[0].length - 1)) {
+            neighborCount++;
+        }
+        return neighborCount;
     }
 }
