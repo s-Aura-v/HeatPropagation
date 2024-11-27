@@ -44,15 +44,17 @@ public class MetalDecomposition {
 
 
     /**
-     * Filling the metal alloy with the metal cells with heat constants. The metal alloys are filled it by column rather than rows.
-     *
+     * Filling the metal alloy with the metal cells composed of 3 metals with unique heat constant.
+     * The values represented are PERCENT OF METAL in a cell, not HEAT CONSTANT itself.
      * @param metalAlloy - the 2d array of Metal Cells with no instantiated values
      * @return metalAlloy - the 2d array of Metal Cells with instantiated values
      * <p>
      * Visualization of Metal Alloy :
-     * 0.75	|  0.75	|  0.75	|  0.75	|  0.75	|  1.0	|  1.0	|  1.0	|  1.0	|  1.25	|  1.25	|  1.25
-     * 0.75	|  0.75	|  0.75	|  0.75	|  1.0	|  1.0	|  1.0	|  1.0	|  1.0	|  1.25	|  1.25	|  1.25
-     * 0.75	|  0.75	|  0.75	|  0.75	|  1.0	|  1.0	|  1.0	|  1.0	|  1.25	|  1.25	|  1.25	|  1.25
+     * [HeatConstant1% ;; HeatConstant2% ;; HeatConstant3%]
+        30;;26;;44	|  34;;29;;37	|  34;;34;;32	|  34;;32;;34	|  33;;37;;30	|  35;;26;;39	|  28;;26;;46	|  27;;37;;36
+        36;;35;;29	|  35;;34;;31	|  35;;27;;38	|  29;;37;;34	|  26;;36;;38	|  29;;28;;43	|  29;;32;;39	|  28;;34;;38
+        35;;38;;27	|  27;;28;;45	|  37;;35;;28	|  36;;34;;30	|  33;;34;;33	|  32;;33;;35	|  38;;35;;27	|  32;;36;;32
+        35;;38;;27	|  36;;33;;31	|  27;;38;;35	|  27;;31;;42	|  33;;36;;31	|  30;;35;;35	|  37;;28;;35	|  28;;38;;34
      */
     static MetalCell[][] fillMetalAlloy(MetalCell[][] metalAlloy) {
         for (int columnIndex = 0; columnIndex < metalAlloy[0].length; columnIndex++) {
