@@ -133,8 +133,9 @@ public class MetalAlloy extends RecursiveTask<Double> {
         }
         temperature = eastTemp * eastMetalMPercentage +
                 southEastTemp * southEastMetalMPercentage +
-                southTemp + southMetalMPercentage +
+                southTemp * southMetalMPercentage +
                 southWestTemp * southWestMetalMPercentage +
+                westTemp * westMetalMPercentage +
                 northWestTemp * northWestMetalMPercentage +
                 northTemp * northMetalMPercentage +
                 northEastTemp * northEastMetalMPercentage;
