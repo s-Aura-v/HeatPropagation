@@ -1,7 +1,8 @@
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
-public class MetalAlloy {
+public class MetalAlloy extends RecursiveTask<Double> {
     MetalCell[][] metalAlloy;
     MetalCell[][] leftPartition;
     MetalCell[][] rightPartition;
@@ -15,13 +16,20 @@ public class MetalAlloy {
         this.bottomRightTemperature_T = bottomRightTemperature_T;
     }
 
+    @Override
+    protected Double compute() {
+        return 0.0;
+    }
+
     void heatMetalAlloy(boolean topLeft) {
-        ExecutorService executorService = new ForkJoinPool();
+        MetalAlloy rightPartition = new MetalAlloy(leftPartition, leftPartition, topLeftTemperature_S, bottomRightTemperature_T);
+        rightPartition.fork();
         if (topLeft) {
             for (int i = 0; i < leftPartition.length; i++) {
                 for (int j = 0; j < leftPartition[0].length; j++) {
-//                    leftPartition[i][j].setTemperature(topLeftTemperature_S);
-                    System.out.println(calculateTemperature(i, j));
+                    double surroundingTemperature_tempN = (getTemperature(i, j));
+//                    double heatConstant_Cm = leftPartition[i][j].getHeat_constant();
+//                    double percentageOf
                 }
             }
 
@@ -36,12 +44,11 @@ public class MetalAlloy {
      * @param y - y coordinate of the cell in the 2d array
      * @return temperature - total temperature
      */
-    double calculateTemperature(int x, int y) {
-        double temperature = 0;
-        if (x - 1 < 0 || y - 1 < 0 || x + 1 >= leftPartition.length || y + 1 >= rightPartition[0].length) {
-            // Do Nothing
-        }
-        double eastTemp = 0, southEastTemp = 0, southTemp = 0, southWestTemp = 0, westTemp = 0, northWestTemp = 0, northTemp = 0, northEastTemp = 0;
+    double getTemperature(int x, int y) {
+        double northEastTemp = 0, northTemp = 0, northWestTemp = 0,
+                westTemp = 0, temperature = 0, eastTemp = 0,
+                southWestTemp = 0, southTemp = 0, southEastTemp = 0;
+
         try {
             eastTemp = leftPartition[x + 1][y].getTemperature();
         } catch (ArrayIndexOutOfBoundsException e) {

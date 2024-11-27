@@ -1,18 +1,12 @@
 public class MetalCell {
-    double heat_constant;
+    int HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE;
     double temperature;
     boolean border;
 
-    public MetalCell(double heat_constant) {
-        this.heat_constant = heat_constant;
-    }
-
-    public double getHeat_constant() {
-        return heat_constant;
-    }
-
-    public void setHeat_constant(int heat_constant) {
-        this.heat_constant = heat_constant;
+    public MetalCell(int HC1_PERCENTAGE, int HC2_PERCENTAGE, int HC3_PERCENTAGE) {
+        this.HC1_PERCENTAGE = HC1_PERCENTAGE;
+        this.HC2_PERCENTAGE = HC2_PERCENTAGE;
+        this.HC3_PERCENTAGE = HC3_PERCENTAGE;
     }
 
     public double getTemperature() {
@@ -23,9 +17,8 @@ public class MetalCell {
         this.temperature = temperature;
     }
 
-
     @Override
     public String toString() {
-        return heat_constant + "";
+        return "" + HC1_PERCENTAGE + ";;" + HC2_PERCENTAGE + ";;" + HC3_PERCENTAGE;
     }
 }

@@ -8,14 +8,14 @@ public class MetalDecomposition {
     static final double HEATCONSTANT_1 = .75;
     static final double HEATCONSTANT_2 = 1.0;
     static final double HEATCONSTANT_3 = 1.25;
-    static int HC1_COUNT;
-    static int HC2_COUNT;
-    static int HC3_COUNT;
+    static int HC1_PERCENTAGE;
+    static int HC2_PERCENTAGE;
+    static int HC3_PERCENTAGE;
     static final int height = 6;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 30;
     static final int bottomRightTemperature_T = 28;
-
+    static final int METAL_PERCENTAGE = 33;
 
 
     public static void main(String[] args) {
@@ -26,7 +26,6 @@ public class MetalDecomposition {
         MetalCell[][] leftPartition = new MetalCell[height][partitionedWidth];
         MetalCell[][] rightPartition = new MetalCell[height][partitionedWidth];
 
-        applyNoise();
         fillMetalAlloy(metalAlloy);
         splitMetalAlloy(metalAlloy, leftPartition, rightPartition);
 
@@ -37,19 +36,10 @@ public class MetalDecomposition {
     /**
      * Applying a 20% margin of error in the metal count in the array
      */
-    static void applyNoise() {
-        int totalCells = height * width;
-        int base = totalCells / 3;
-        HC1_COUNT = ThreadLocalRandom.current().nextInt((int) (base * 0.8), (int) (base * 1.2));
-        HC2_COUNT = ThreadLocalRandom.current().nextInt((int) (base * 0.8), (int) (base * 1.2));
-        HC3_COUNT = totalCells - HC1_COUNT - HC2_COUNT;
-        if (debug) {
-            System.out.println(
-                    "Total Cells: " + totalCells + "\n" +
-                    "HeatConstant1: " + HC1_COUNT + "\n" +
-                    "HeatConstant2: " + HC2_COUNT + "\n" +
-                    "HeatConstant3: " + HC3_COUNT);
-        }
+    static void calculateHeatConstantProportion() {
+        HC1_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
+        HC2_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
+        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
     }
 
 
@@ -65,24 +55,11 @@ public class MetalDecomposition {
      * 0.75	|  0.75	|  0.75	|  0.75	|  1.0	|  1.0	|  1.0	|  1.0	|  1.25	|  1.25	|  1.25	|  1.25
      */
     static MetalCell[][] fillMetalAlloy(MetalCell[][] metalAlloy) {
-        int HC1_temp = HC1_COUNT;
-        int HC2_temp = HC2_COUNT;
-        int HC3_temp = HC3_COUNT;
         for (int columnIndex = 0; columnIndex < metalAlloy[0].length; columnIndex++) {
             for (int rowIndex = 0; rowIndex < metalAlloy.length; rowIndex++) {
-                if (HC1_temp != 0) {
-                    metalAlloy[rowIndex][columnIndex] = new MetalCell(HEATCONSTANT_1);
-                    metalAlloy[rowIndex][columnIndex].setTemperature(0);
-                    HC1_temp--;
-                } else if (HC1_temp == 0 && HC2_temp != 0) {
-                    metalAlloy[rowIndex][columnIndex] = new MetalCell(HEATCONSTANT_2);
-                    metalAlloy[rowIndex][columnIndex].setTemperature(0);
-                    HC2_temp--;
-                } else if (HC1_temp == 0 && HC2_temp == 0 && HC3_temp != 0) {
-                    metalAlloy[rowIndex][columnIndex] = new MetalCell(HEATCONSTANT_3);
-                    metalAlloy[rowIndex][columnIndex].setTemperature(0);
-                    HC3_temp--;
-                }
+                calculateHeatConstantProportion();
+                metalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE);
+                metalAlloy[rowIndex][columnIndex].setTemperature(0);
             }
         }
         if (debug) {
