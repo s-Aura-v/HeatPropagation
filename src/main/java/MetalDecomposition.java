@@ -13,8 +13,8 @@ public class MetalDecomposition {
     static int HC3_PERCENTAGE;
     static final int height = 6;
     static final int width = height * 4;
-    static final int topLeftTemperature_S = 30;
-    static final int bottomRightTemperature_T = 28;
+    static final int topLeftTemperature_S = 100;
+    static final int bottomRightTemperature_T = 100;
     static final int METAL_PERCENTAGE = 33;
 
 

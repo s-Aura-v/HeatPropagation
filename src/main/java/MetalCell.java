@@ -1,12 +1,12 @@
 public class MetalCell {
-    int HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE;
+    double HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE;
     double temperature;
     boolean border;
 
-    public MetalCell(int HC1_PERCENTAGE, int HC2_PERCENTAGE, int HC3_PERCENTAGE) {
-        this.HC1_PERCENTAGE = HC1_PERCENTAGE;
-        this.HC2_PERCENTAGE = HC2_PERCENTAGE;
-        this.HC3_PERCENTAGE = HC3_PERCENTAGE;
+    public MetalCell(double HC1_PERCENTAGE, double HC2_PERCENTAGE, double HC3_PERCENTAGE) {
+        this.HC1_PERCENTAGE = HC1_PERCENTAGE/100;
+        this.HC2_PERCENTAGE = HC2_PERCENTAGE/100;
+        this.HC3_PERCENTAGE = HC3_PERCENTAGE/100;
     }
 
     public double getTemperature() {
@@ -17,7 +17,7 @@ public class MetalCell {
         this.temperature = temperature;
     }
 
-    public int getHeatConstantPercentage(int i) {
+    public double getHeatConstantPercentage(int i) {
         switch (i) {
             case 0:
                 return HC1_PERCENTAGE;
