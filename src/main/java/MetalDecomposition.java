@@ -16,6 +16,7 @@ public class MetalDecomposition {
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;
     static final int METAL_PERCENTAGE = 33;
+    public static volatile int LEFT_COMPUTED = 0;
 
 
     public static void main(String[] args) {
@@ -30,7 +31,7 @@ public class MetalDecomposition {
         splitMetalAlloy(metalAlloy, leftPartition, rightPartition);
 
         MetalAlloy alloy = new MetalAlloy(leftPartition, rightPartition, topLeftTemperature_S, bottomRightTemperature_T);
-        alloy.heatMetalAlloy(true);
+        alloy.compute();
 
         if (true) {
             System.out.println("Representation of Left Partition\n" + Arrays.deepToString(leftPartition)
