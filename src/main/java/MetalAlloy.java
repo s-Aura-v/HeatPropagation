@@ -30,8 +30,8 @@ public class MetalAlloy {
         originalMetalAlloy[0][0].setTemperature(topLeftTemperature_S);
         originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
         int partitionWidth = originalMetalAlloy[0].length / 2;
-        // TODO: BUG; IT'S NOT GETTING HOTTER, BUT COLDER?
-        for (int a = 0; a < 200000; a++) {
+        // TODO: IT'S INCREASING SLOWLY, IS THAT VALID?
+        for (int a = 0; a < 10000; a++) {
             originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
             for (int i = 0; i < originalMetalAlloy.length; i++) {
                 for (int j = 0; j < partitionWidth; j++) {
@@ -60,6 +60,9 @@ public class MetalAlloy {
                     } else {
                         MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                     }
+                    System.out.println("Final Representation of Edited Metal Partition\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
+                            .replace("],", "\n").replace(",", "\t| ")
+                            .replaceAll("[\\[\\]]", " "));
                 }
             }
         }
@@ -185,7 +188,7 @@ public class MetalAlloy {
      * @return copiedMetalAlloy - the copy of metalAlloy with new references
      */
     MetalCell[][] copyMetalAlloy(MetalCell[][] metalAlloy) {
-        MetalCell[][] copiedMetalAlloy = Arrays.copyOf(metalAlloy, metalAlloy.length);
+        MetalCell[][] copiedMetalAlloy = new MetalCell[metalAlloy.length][metalAlloy[0].length];
         for (int i = 0; i < copiedMetalAlloy.length; i++) {
             for (int j = 0; j < copiedMetalAlloy[i].length; j++) {
                 copiedMetalAlloy[i][j] = new MetalCell(
