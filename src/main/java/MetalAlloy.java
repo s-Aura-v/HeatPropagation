@@ -8,7 +8,6 @@ public class MetalAlloy {
 
     public MetalAlloy(MetalCell[][] metalAlloy, int topLeftTemperature_S, int bottomRightTemperature_T) {
         this.originalMetalAlloy = metalAlloy;
-        MetalDecomposition.finalMetalAlloy = metalAlloy;
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
     }
@@ -28,33 +27,43 @@ public class MetalAlloy {
      * p_n_m is the percentage of metal m in neighbor n.
      */
     void heatMetalAlloy(boolean isLeftPartition) {
-        int partitionWidth = originalMetalAlloy[0].length/2;
-            for (int i = 0; i < originalMetalAlloy.length; i++) {
-                for (int j = 0; j < partitionWidth; j++) {
-                    double[] listOfTemperatures = new double[3];
-                    for (int k = 0; k < 3; k++) {
-                        // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
-                        double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantPercentage(k);
-                        // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
-                        double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
-                        // GETTING #ofNeighbors
-                        int neighborCount_N = getNeighborCount(i, j, originalMetalAlloy);
-                        // SOLVING THE LEFT SIDE OF THE EQUATION
-                        double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
-                        // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
-                        double temp = heatConstant_Cm * leftSideOfTheEquation;
-                        listOfTemperatures[k] = temp;
+        originalMetalAlloy[0][0].setTemperature(topLeftTemperature_S);
+        originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
+        int partitionWidth = originalMetalAlloy[0].length / 2;
+        for (int i = 0; i < originalMetalAlloy.length; i++) {
+            for (int j = 0; j < partitionWidth; j++) {
+                double[] listOfTemperatures = new double[3];
+                for (int k = 0; k < 3; k++) {
+                    // DO NOT CHANGE THE TOP LEFT TEMPERATURE; IT'S CONSTANT BECAUSE IT IS HEATING UP THE REST OF THE METAL
+                    if (i == 0 && j == 0) {
+                        continue;
                     }
-                    // ADDING THE SUMMATION TO THE CELL
+                    // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
+                    double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantPercentage(k);
+                    // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
+                    double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
+                    // GETTING #ofNeighbors
+                    int neighborCount_N = getNeighborCount(i, j, originalMetalAlloy);
+                    // SOLVING THE LEFT SIDE OF THE EQUATION
+                    double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
+                    // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
+                    double temp = heatConstant_Cm * leftSideOfTheEquation;
+                    listOfTemperatures[k] = temp;
+                }
+                // ADDING THE SUMMATION TO THE CELL
+                if ((i == 0 && j == 0)) {
+                    MetalDecomposition.finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
+                } else {
                     MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                 }
             }
-
+        }
         if (true) {
             System.out.println("Final Representation of Edited Metal Partition\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
                     .replace("],", "\n").replace(",", "\t| ")
                     .replaceAll("[\\[\\]]", " "));
         }
+
     }
 
     /**
@@ -129,11 +138,6 @@ public class MetalAlloy {
             northEastMetalMPercentage = partition[x + 1][y - 1].getHeatConstantPercentage(metalM);
         } catch (ArrayIndexOutOfBoundsException e) {
             // Move on
-        }
-        // THIS IS A FAKE FIX. SOMEHOW SIMULATE HEATING UP METAL PLEASE.
-        // FIX: NO IDEA.
-        if (x == 0 && y == 0 || x == partition.length - 1 && y == partition[0].length - 1) {
-            return partition[x][y].getTemperature();
         }
 
         temperature =

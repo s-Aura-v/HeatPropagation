@@ -20,14 +20,11 @@ public class MetalDecomposition {
     // Update this alloy when applying temperature
     static MetalCell[][] finalMetalAlloy = new MetalCell[height][width];
 
-    // GLOBAL VALUE THAT HELPS US DETERMINE WHEN TO COMPUTE RIGHT PARTITION
-    public static volatile int LEFT_COMPUTED = 0;
-
-
     public static void main(String[] args) {
         MetalCell[][] metalAlloy = new MetalCell[height][width];
         fillMetalAlloy(metalAlloy);
         MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
+        alloy.heatMetalAlloy(true);
     }
 
     /**
@@ -37,11 +34,11 @@ public class MetalDecomposition {
 //        HC1_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
 //        HC2_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
 //        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
+
         HC1_PERCENTAGE = 33;
         HC2_PERCENTAGE = 33;
         HC3_PERCENTAGE = 33;
     }
-
 
     /**
      * Filling the metal alloy with the metal cells composed of 3 metals with unique heat constant.
@@ -62,41 +59,15 @@ public class MetalDecomposition {
                 calculateHeatConstantProportion();
                 metalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE);
                 metalAlloy[rowIndex][columnIndex].setTemperature(0);
+                finalMetalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE);
+                finalMetalAlloy[rowIndex][columnIndex].setTemperature(0);
             }
         }
         if (debug) {
-            System.out.println("Representation of Metal Alloy\n" + Arrays.deepToString(metalAlloy)
+            System.out.println("Original Metal Alloy\n" + Arrays.deepToString(metalAlloy)
                     .replace("],", "\n").replace(",", "\t| ")
                     .replaceAll("[\\[\\]]", " "));
         }
         return metalAlloy;
-    }
-
-    /**
-     * Deprecated - It is not necessary.
-     * Partitioning the metalAlloy into 2 halves so it can be worked on in parallel.
-     *
-     * @param metalAlloy     - the 2d array of Metal Cells with instantiated values
-     * @param leftPartition  - the empty left side of metalAlloy
-     * @param rightPartition - the empty right side of metalAlloy
-     *                       No direct output, but a side effect - the left and right partitioned are filled
-     */
-    static void splitMetalAlloy(MetalCell[][] metalAlloy, MetalCell[][] leftPartition, MetalCell[][] rightPartition) {
-        int midpoint = width / 2;
-        for (int i = 0; i < leftPartition.length; i++) {
-            for (int j = 0; j < leftPartition[0].length; j++) {
-                leftPartition[i][j] = metalAlloy[i][j];
-                rightPartition[i][j] = metalAlloy[i][j + midpoint];
-            }
-        }
-        if (debug) {
-            System.out.println("Representation of Left Partition\n" + Arrays.deepToString(leftPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-
-            System.out.println("Representation of Right Partition\n" + Arrays.deepToString(rightPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-        }
     }
 }
