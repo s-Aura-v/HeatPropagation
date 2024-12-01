@@ -3,7 +3,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class MetalDecomposition {
 
-    static final boolean debug = false;
+    public static final boolean debug = false;
 
     static final double HEATCONSTANT_1 = .75;
     static final double HEATCONSTANT_2 = 1.0;
@@ -11,46 +11,37 @@ public class MetalDecomposition {
     static int HC1_PERCENTAGE;
     static int HC2_PERCENTAGE;
     static int HC3_PERCENTAGE;
-    static final int height = 6;
+    static final int height = 4;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;
     static final int METAL_PERCENTAGE = 33;
+
+    // Update this alloy when applying temperature
+    static MetalCell[][] finalMetalAlloy = new MetalCell[height][width];
+
+
+    // GLOBAL VALUE THAT HELPS US DETERMINE WHEN TO COMPUTE RIGHT PARTITION
     public static volatile int LEFT_COMPUTED = 0;
 
 
     public static void main(String[] args) {
-        //CONSTANTS
-//        int dimensionFactor = 9;
-        int partitionedWidth = ((width) / 2);
         MetalCell[][] metalAlloy = new MetalCell[height][width];
-        MetalCell[][] leftPartition = new MetalCell[height][partitionedWidth];
-        MetalCell[][] rightPartition = new MetalCell[height][partitionedWidth];
-
         fillMetalAlloy(metalAlloy);
-        splitMetalAlloy(metalAlloy, leftPartition, rightPartition);
-
-        MetalAlloy alloy = new MetalAlloy(leftPartition, rightPartition, topLeftTemperature_S, bottomRightTemperature_T);
+        MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
         alloy.compute();
-
-        if (true) {
-            System.out.println("Representation of Left Partition\n" + Arrays.deepToString(leftPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-
-            System.out.println("Representation of Right Partition\n" + Arrays.deepToString(rightPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-        }
     }
 
     /**
      * Applying a 20% margin of error in the metal count in the array
      */
     static void calculateHeatConstantProportion() {
-        HC1_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
-        HC2_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
-        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
+//        HC1_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
+//        HC2_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
+//        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
+        HC1_PERCENTAGE = 33;
+        HC2_PERCENTAGE = 33;
+        HC3_PERCENTAGE = 33;
     }
 
 
@@ -84,6 +75,7 @@ public class MetalDecomposition {
     }
 
     /**
+     * Deprecated - It is not necessary.
      * Partitioning the metalAlloy into 2 halves so it can be worked on in parallel.
      *
      * @param metalAlloy     - the 2d array of Metal Cells with instantiated values

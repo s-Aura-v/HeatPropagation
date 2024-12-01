@@ -17,6 +17,18 @@ public class MetalCell {
         this.temperature = temperature;
     }
 
+    public double getHC1_PERCENTAGE() {
+        return HC1_PERCENTAGE;
+    }
+
+    public double getHC2_PERCENTAGE() {
+        return HC2_PERCENTAGE;
+    }
+
+    public double getHC3_PERCENTAGE() {
+        return HC3_PERCENTAGE;
+    }
+
     public double getHeatConstantPercentage(int i) {
         switch (i) {
             case 0:
