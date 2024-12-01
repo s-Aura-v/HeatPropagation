@@ -4,9 +4,9 @@ public class MetalCell {
     boolean border;
 
     public MetalCell(double HC1_PERCENTAGE, double HC2_PERCENTAGE, double HC3_PERCENTAGE) {
-        this.HC1_PERCENTAGE = HC1_PERCENTAGE/100;
-        this.HC2_PERCENTAGE = HC2_PERCENTAGE/100;
-        this.HC3_PERCENTAGE = HC3_PERCENTAGE/100;
+        this.HC1_PERCENTAGE = HC1_PERCENTAGE;
+        this.HC2_PERCENTAGE = HC2_PERCENTAGE;
+        this.HC3_PERCENTAGE = HC3_PERCENTAGE;
     }
 
     public double getTemperature() {

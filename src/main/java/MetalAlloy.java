@@ -30,31 +30,36 @@ public class MetalAlloy {
         originalMetalAlloy[0][0].setTemperature(topLeftTemperature_S);
         originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
         int partitionWidth = originalMetalAlloy[0].length / 2;
-        for (int i = 0; i < originalMetalAlloy.length; i++) {
-            for (int j = 0; j < partitionWidth; j++) {
-                double[] listOfTemperatures = new double[3];
-                for (int k = 0; k < 3; k++) {
-                    // DO NOT CHANGE THE TOP LEFT TEMPERATURE; IT'S CONSTANT BECAUSE IT IS HEATING UP THE REST OF THE METAL
-                    if (i == 0 && j == 0) {
-                        continue;
+        // TODO: BUG; IT'S NOT GETTING HOTTER, BUT COLDER?
+        for (int a = 0; a < 200000; a++) {
+            originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
+            for (int i = 0; i < originalMetalAlloy.length; i++) {
+                for (int j = 0; j < partitionWidth; j++) {
+                    double[] listOfTemperatures = new double[3];
+                    for (int k = 0; k < 3; k++) {
+                        // DO NOT CHANGE THE TOP LEFT TEMPERATURE; IT'S CONSTANT BECAUSE IT IS HEATING UP THE REST OF THE METAL
+                        if (i == 0 && j == 0) {
+                            continue;
+                        }
+
+                        // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
+                        double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantPercentage(k);
+                        // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
+                        double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
+                        // GETTING #ofNeighbors
+                        int neighborCount_N = getNeighborCount(i, j, originalMetalAlloy);
+                        // SOLVING THE LEFT SIDE OF THE EQUATION
+                        double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
+                        // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
+                        double temp = heatConstant_Cm * leftSideOfTheEquation;
+                        listOfTemperatures[k] = temp;
                     }
-                    // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
-                    double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantPercentage(k);
-                    // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
-                    double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
-                    // GETTING #ofNeighbors
-                    int neighborCount_N = getNeighborCount(i, j, originalMetalAlloy);
-                    // SOLVING THE LEFT SIDE OF THE EQUATION
-                    double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
-                    // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
-                    double temp = heatConstant_Cm * leftSideOfTheEquation;
-                    listOfTemperatures[k] = temp;
-                }
-                // ADDING THE SUMMATION TO THE CELL
-                if ((i == 0 && j == 0)) {
-                    MetalDecomposition.finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
-                } else {
-                    MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                    // ADDING THE SUMMATION TO THE CELL
+                    if ((i == 0 && j == 0)) {
+                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
+                    } else {
+                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                    }
                 }
             }
         }

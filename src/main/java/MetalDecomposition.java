@@ -8,14 +8,14 @@ public class MetalDecomposition {
     static final double HEATCONSTANT_1 = .75;
     static final double HEATCONSTANT_2 = 1.0;
     static final double HEATCONSTANT_3 = 1.25;
-    static int HC1_PERCENTAGE;
-    static int HC2_PERCENTAGE;
-    static int HC3_PERCENTAGE;
+    static double HC1_PERCENTAGE;
+    static double HC2_PERCENTAGE;
+    static double HC3_PERCENTAGE;
     static final int height = 4;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;
-    static final int METAL_PERCENTAGE = 33;
+    static final double METAL_PERCENTAGE = .33;
 
     // Update this alloy when applying temperature
     static MetalCell[][] finalMetalAlloy = new MetalCell[height][width];
@@ -31,13 +31,13 @@ public class MetalDecomposition {
      * Applying a 20% margin of error in the metal count in the array
      */
     static void calculateHeatConstantProportion() {
-//        HC1_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
-//        HC2_PERCENTAGE = ThreadLocalRandom.current().nextInt((int) (METAL_PERCENTAGE * 0.8), (int) (METAL_PERCENTAGE * 1.2));
+//        HC1_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
+//        HC2_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
 //        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
 
-        HC1_PERCENTAGE = 33;
-        HC2_PERCENTAGE = 33;
-        HC3_PERCENTAGE = 33;
+        HC1_PERCENTAGE = .33;
+        HC2_PERCENTAGE = .33;
+        HC3_PERCENTAGE = .33;
     }
 
     /**
@@ -63,6 +63,8 @@ public class MetalDecomposition {
                 finalMetalAlloy[rowIndex][columnIndex].setTemperature(0);
             }
         }
+        metalAlloy[0][0].setTemperature(topLeftTemperature_S);
+        finalMetalAlloy[0][0].setTemperature(topLeftTemperature_S);
         if (debug) {
             System.out.println("Original Metal Alloy\n" + Arrays.deepToString(metalAlloy)
                     .replace("],", "\n").replace(",", "\t| ")
