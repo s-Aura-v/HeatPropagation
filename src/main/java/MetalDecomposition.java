@@ -20,7 +20,6 @@ public class MetalDecomposition {
     // Update this alloy when applying temperature
     static MetalCell[][] finalMetalAlloy = new MetalCell[height][width];
 
-
     // GLOBAL VALUE THAT HELPS US DETERMINE WHEN TO COMPUTE RIGHT PARTITION
     public static volatile int LEFT_COMPUTED = 0;
 
@@ -29,7 +28,6 @@ public class MetalDecomposition {
         MetalCell[][] metalAlloy = new MetalCell[height][width];
         fillMetalAlloy(metalAlloy);
         MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-        alloy.compute();
     }
 
     /**

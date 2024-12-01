@@ -1,36 +1,16 @@
 import java.util.Arrays;
 import java.util.concurrent.RecursiveTask;
 
-public class MetalAlloy extends RecursiveTask<Double> {
+public class MetalAlloy {
     MetalCell[][] originalMetalAlloy;
-    MetalCell[][] editedMetalAlloy;
     int topLeftTemperature_S;
     int bottomRightTemperature_T;
 
     public MetalAlloy(MetalCell[][] metalAlloy, int topLeftTemperature_S, int bottomRightTemperature_T) {
         this.originalMetalAlloy = metalAlloy;
-        this.editedMetalAlloy = copyMetalAlloy(metalAlloy);
+        MetalDecomposition.finalMetalAlloy = metalAlloy;
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
-    }
-
-    /**
-     * Creates a fork that sends to heat the right partition, then heats left partition itself.
-     * Part of RecursiveTask<Double>
-     */
-    @Override
-    protected Double compute() {
-        if (MetalDecomposition.LEFT_COMPUTED == 0) {
-            MetalDecomposition.LEFT_COMPUTED++;
-            originalMetalAlloy[0][0].setTemperature(topLeftTemperature_S);
-            originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
-            MetalAlloy rightPartitionFork = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-            rightPartitionFork.fork();
-            heatMetalAlloy(true);
-        } else {
-            heatMetalAlloy(false);
-        }
-        return 0.0;
     }
 
     /**
@@ -48,12 +28,9 @@ public class MetalAlloy extends RecursiveTask<Double> {
      * p_n_m is the percentage of metal m in neighbor n.
      */
     void heatMetalAlloy(boolean isLeftPartition) {
-//        for (int a = 0; a < 20; a++) {
-        if (isLeftPartition) {
-            // LEFT PARTITION - START FROM TOP LEFT AND MAKE YOUR WAY DOWN
-            originalMetalAlloy = copyMetalAlloy(editedMetalAlloy);
+        int partitionWidth = originalMetalAlloy[0].length/2;
             for (int i = 0; i < originalMetalAlloy.length; i++) {
-                for (int j = 0; j < originalMetalAlloy[0].length; j++) {
+                for (int j = 0; j < partitionWidth; j++) {
                     double[] listOfTemperatures = new double[3];
                     for (int k = 0; k < 3; k++) {
                         // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
@@ -69,35 +46,12 @@ public class MetalAlloy extends RecursiveTask<Double> {
                         listOfTemperatures[k] = temp;
                     }
                     // ADDING THE SUMMATION TO THE CELL
-                    editedMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                    MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                 }
             }
-        } else {
-            // RIGHT PARTITION - START FROM BOTTOM RIGHT AND MAKE YOUR WAY UP
-            originalMetalAlloy = copyMetalAlloy(editedMetalAlloy);
-            for (int i = originalMetalAlloy.length - 1; i >= 0; i--) {
-                for (int j = originalMetalAlloy[0].length - 1; j >= 0; j--) {
-                    double[] listOfTemperatures = new double[3];
-                    for (int k = 0; k < 3; k++) {
-                        // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
-                        double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantPercentage(k);
-                        // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
-                        double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
-                        // GETTING #ofNeighbors
-                        int neighborCount_N = getNeighborCount(i, j, originalMetalAlloy);
-                        // SOLVING THE LEFT SIDE OF THE EQUATION
-                        double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
-                        // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
-                        double temp = heatConstant_Cm * leftSideOfTheEquation;
-                        listOfTemperatures[k] = temp;
-                    }
-                    // ADDING THE SUMMATION TO THE CELL
-                    editedMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
-                }
-            }
-        }
+
         if (true) {
-            System.out.println("Final Representation of Edited Metal Partition\n" + Arrays.deepToString(editedMetalAlloy)
+            System.out.println("Final Representation of Edited Metal Partition\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
                     .replace("],", "\n").replace(",", "\t| ")
                     .replaceAll("[\\[\\]]", " "));
         }
