@@ -31,7 +31,7 @@ public class MetalAlloy {
         originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
         int partitionWidth = originalMetalAlloy[0].length / 2;
         // TODO: IT'S INCREASING SLOWLY, IS THAT VALID?
-        for (int a = 0; a < 10000; a++) {
+        for (int a = 0; a < 1000000; a++) {
             originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
             for (int i = 0; i < originalMetalAlloy.length; i++) {
                 for (int j = 0; j < partitionWidth; j++) {
@@ -41,9 +41,8 @@ public class MetalAlloy {
                         if (i == 0 && j == 0) {
                             continue;
                         }
-
                         // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
-                        double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantPercentage(k);
+                        double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantValues(k);
                         // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
                         double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
                         // GETTING #ofNeighbors
@@ -59,19 +58,21 @@ public class MetalAlloy {
                         MetalDecomposition.finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
                     } else {
                         MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+//                        System.out.println(Arrays.stream(listOfTemperatures).sum());
                     }
-                    System.out.println("Final Representation of Edited Metal Partition\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
-                            .replace("],", "\n").replace(",", "\t| ")
-                            .replaceAll("[\\[\\]]", " "));
                 }
             }
+//            if (true) {
+//                System.out.println("Final Representation of Edited Metal Partition\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
+//                        .replace("],", "\n").replace(",", "\t| ")
+//                        .replaceAll("[\\[\\]]", " "));
+//            }
         }
         if (true) {
             System.out.println("Final Representation of Edited Metal Partition\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
                     .replace("],", "\n").replace(",", "\t| ")
                     .replaceAll("[\\[\\]]", " "));
         }
-
     }
 
     /**
@@ -175,7 +176,8 @@ public class MetalAlloy {
         if (y == 0 || y == partition[0].length - 1) {
             neighborCount -= 3;
         }
-        if ((x == 0 && y == 0) || ((x == partition.length - 1) && (y == partition[0].length - 1))) {
+        if ((x == 0 && y == 0) || ((x == partition.length - 1) && (y == partition[0].length - 1))
+                || (x == 0 && y == partition[0].length - 1) || (y == 0 && x == partition.length)) {
             neighborCount++;
         }
         return neighborCount;
@@ -194,7 +196,10 @@ public class MetalAlloy {
                 copiedMetalAlloy[i][j] = new MetalCell(
                         metalAlloy[i][j].getHC1_PERCENTAGE(),
                         metalAlloy[i][j].getHC2_PERCENTAGE(),
-                        metalAlloy[i][j].getHC3_PERCENTAGE());
+                        metalAlloy[i][j].getHC3_PERCENTAGE(),
+                        metalAlloy[i][j].getHC1_CONSTANT(),
+                        metalAlloy[i][j].getHC2_CONSTANT(),
+                        metalAlloy[i][j].getHC3_CONSTANT());
                 copiedMetalAlloy[i][j].setTemperature(metalAlloy[i][j].getTemperature());
             }
         }

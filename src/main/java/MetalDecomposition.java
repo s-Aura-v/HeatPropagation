@@ -11,7 +11,7 @@ public class MetalDecomposition {
     static double HC1_PERCENTAGE;
     static double HC2_PERCENTAGE;
     static double HC3_PERCENTAGE;
-    static final int height = 4;
+    static final int height = 3;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;
@@ -57,9 +57,9 @@ public class MetalDecomposition {
         for (int columnIndex = 0; columnIndex < metalAlloy[0].length; columnIndex++) {
             for (int rowIndex = 0; rowIndex < metalAlloy.length; rowIndex++) {
                 calculateHeatConstantProportion();
-                metalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE);
+                metalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE, HEATCONSTANT_1, HEATCONSTANT_2, HEATCONSTANT_3);
                 metalAlloy[rowIndex][columnIndex].setTemperature(0);
-                finalMetalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE);
+                finalMetalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE, HEATCONSTANT_1, HEATCONSTANT_2, HEATCONSTANT_3);
                 finalMetalAlloy[rowIndex][columnIndex].setTemperature(0);
             }
         }
