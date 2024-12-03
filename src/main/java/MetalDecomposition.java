@@ -3,7 +3,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class MetalDecomposition {
 
-    public static final boolean debug = false;
+    public static final boolean debug = true;
 
     static final double HEATCONSTANT_1 = .75;
     static final double HEATCONSTANT_2 = 1.0;
@@ -11,7 +11,7 @@ public class MetalDecomposition {
     static double HC1_PERCENTAGE;
     static double HC2_PERCENTAGE;
     static double HC3_PERCENTAGE;
-    static final int height = 3;
+    static final int height = 4;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;
@@ -24,7 +24,7 @@ public class MetalDecomposition {
         MetalCell[][] metalAlloy = new MetalCell[height][width];
         fillMetalAlloy(metalAlloy);
         MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-        alloy.heatMetalAlloy(true);
+        alloy.heatLeftPartition(metalAlloy[0].length/2);
     }
 
     /**
@@ -64,7 +64,9 @@ public class MetalDecomposition {
             }
         }
         metalAlloy[0][0].setTemperature(topLeftTemperature_S);
+        metalAlloy[metalAlloy.length - 1][metalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
         finalMetalAlloy[0][0].setTemperature(topLeftTemperature_S);
+        finalMetalAlloy[metalAlloy.length - 1][metalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
         if (debug) {
             System.out.println("Original Metal Alloy\n" + Arrays.deepToString(metalAlloy)
                     .replace("],", "\n").replace(",", "\t| ")
