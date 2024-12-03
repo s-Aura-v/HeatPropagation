@@ -31,7 +31,7 @@ public class MetalAlloy {
         originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
         int partitionWidth = originalMetalAlloy[0].length / 2;
         // TODO: IT'S INCREASING SLOWLY, IS THAT VALID?
-        for (int a = 0; a < 1000000; a++) {
+        for (int a = 0; a < 100000; a++) {
             originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
             for (int i = 0; i < originalMetalAlloy.length; i++) {
                 for (int j = 0; j < partitionWidth; j++) {
@@ -52,6 +52,9 @@ public class MetalAlloy {
                         // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
                         double temp = heatConstant_Cm * leftSideOfTheEquation;
                         listOfTemperatures[k] = temp;
+////                        if (i == 2 && j == 0) {
+////                            System.out.println(neighborCount_N);
+//                        }
                     }
                     // ADDING THE SUMMATION TO THE CELL
                     if ((i == 0 && j == 0)) {
@@ -177,7 +180,7 @@ public class MetalAlloy {
             neighborCount -= 3;
         }
         if ((x == 0 && y == 0) || ((x == partition.length - 1) && (y == partition[0].length - 1))
-                || (x == 0 && y == partition[0].length - 1) || (y == 0 && x == partition.length)) {
+                || (x == 0 && y == partition[0].length - 1) || (y == 0 && x == partition.length - 1)) {
             neighborCount++;
         }
         return neighborCount;
