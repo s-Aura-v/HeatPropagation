@@ -1,44 +1,37 @@
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-public class MetalAlloy {
+public class MetalAlloy extends RecursiveTask<MetalCell[][]> implements Serializable {
     MetalCell[][] originalMetalAlloy;
-    MetalCell[][] finalMetalAlloy;
-    MetalCell[][] leftPartition;
-    MetalCell[][] rightPartition;
+    //    MetalCell[][] leftPartition;
+//    MetalCell[][] rightPartition;
     int topLeftTemperature_S;
     int bottomRightTemperature_T;
 
     public MetalAlloy(MetalCell[][] metalAlloy, int topLeftTemperature_S, int bottomRightTemperature_T) {
+        System.out.println("METAL_ALLOY");
         this.originalMetalAlloy = metalAlloy;
-        this.finalMetalAlloy = copyMetalAlloy(metalAlloy);
-        this.leftPartition = copyMetalAlloy(metalAlloy);
-        this.rightPartition = copyMetalAlloy(metalAlloy);
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
-        debug(true);
     }
 
-    void debug(boolean initial) {
-        if (initial) {
-            System.out.println("Original Representation of Left Partition\n" + Arrays.deepToString(leftPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-            System.out.println("Original Representation of Right Partition\n" + Arrays.deepToString(rightPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
+    @Override
+    protected MetalCell[][] compute() {
+        int partitionWidth = originalMetalAlloy[0].length/2;
+        if (MetalDecomposition.partiteLeft) {
+            MetalDecomposition.partiteLeft = false;
+            heatLeftPartition(partitionWidth);
+            MetalAlloy rightMetalAlloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
+            rightMetalAlloy.fork();
+            heatRightPartition(partitionWidth);
+            mergePartitions(originalMetalAlloy, rightMetalAlloy.originalMetalAlloy);
+
         } else {
-            System.out.println("Final Representation of MetalDecomposition.finalMetalAlloy\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-            System.out.println("Final Representation of Left Partition\n" + Arrays.deepToString(leftPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-            System.out.println("Final Representation of Right Partition\n" + Arrays.deepToString(rightPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
         }
 
+        return originalMetalAlloy;
     }
 
     /**
@@ -56,9 +49,8 @@ public class MetalAlloy {
      * p_n_m is the percentage of metal m in neighbor n.
      */
     void heatLeftPartition(int partitionWidth) {
-        heatRightPartition(partitionWidth);
-        for (int a = 0; a < 5; a++) {
-            originalMetalAlloy = copyMetalAlloy(finalMetalAlloy);
+        for (int a = 0; a < 10000; a++) {
+            originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
             for (int i = 0; i < originalMetalAlloy.length; i++) {
                 for (int j = 0; j < partitionWidth; j++) {
                     double[] listOfTemperatures = new double[3];
@@ -81,28 +73,31 @@ public class MetalAlloy {
                     }
                     // ADDING THE SUMMATION TO THE CELL
                     if ((i == 0 && j == 0)) {
-                        leftPartition[i][j].setTemperature(topLeftTemperature_S);
-                        finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
+                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
                     } else {
-                        leftPartition[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
-                        finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                     }
                 }
             }
         }
+        System.out.println("Left Partition");
         debug(false);
     }
 
+    /**
+     * Heat Right Partition - Bottom right to center
+     *
+     * @param partitionWidth
+     */
     void heatRightPartition(int partitionWidth) {
-        for (int a = 0; a < 5; a++) {
-            originalMetalAlloy = copyMetalAlloy(finalMetalAlloy);
+        for (int a = 0; a < 10000; a++) {
+            originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
             for (int i = originalMetalAlloy.length - 1; i >= 0; i--) {
                 for (int j = originalMetalAlloy[0].length - 1; j >= partitionWidth; j--) {
                     double[] listOfTemperatures = new double[3];
                     for (int k = 0; k < 3; k++) {
                         // DO NOT CHANGE THE TOP LEFT TEMPERATURE; IT'S CONSTANT BECAUSE IT IS HEATING UP THE REST OF THE METAL
                         if (i == originalMetalAlloy.length - 1 && j == originalMetalAlloy[0].length - 1) {
-                            System.out.println(originalMetalAlloy[i][j].temperature);
                             continue;
                         }
                         // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
@@ -118,18 +113,23 @@ public class MetalAlloy {
                         listOfTemperatures[k] = temp;
                     }
                     // ADDING THE SUMMATION TO THE CELL
-                    if ((i == rightPartition.length - 1 && j == rightPartition[0].length - 1)) {
-                        rightPartition[i][j].setTemperature(bottomRightTemperature_T);
-                        finalMetalAlloy[i][j].setTemperature(bottomRightTemperature_T);
+                    if ((i == MetalDecomposition.finalMetalAlloy.length - 1 && j == MetalDecomposition.finalMetalAlloy[0].length - 1)) {
+                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(bottomRightTemperature_T);
                     } else {
-                        rightPartition[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
-                        finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                     }
                 }
             }
         }
+        System.out.println("Right Partition: ");
+        debug(false);
     }
 
+    void redoEdges(int partitionWidth) {
+        for (int i = 0; i < originalMetalAlloy.length; i++) {
+
+        }
+    }
 
     /**
      * Calculates Sum(n=1 to #ofNeighbors) of (temp_n * p_n_m)
@@ -260,6 +260,25 @@ public class MetalAlloy {
             }
         }
         return copiedMetalAlloy;
+    }
+
+    MetalCell[][] mergePartitions(MetalCell[][] leftPartition, MetalCell[][] rightPartition) {
+        MetalCell[][] merged = new MetalCell[leftPartition.length][leftPartition[0].length];
+        int midpoint = leftPartition[0].length / 2;
+        for (int i = 0; i < leftPartition.length; i++) {
+            for (int j = 0; j < midpoint; j++) {
+                merged[i][j] = leftPartition[i][j];
+                merged[i][j+midpoint] = rightPartition[i][j+midpoint];
+            }
+        }
+        return merged;
+    }
+
+
+    void debug(boolean initial) {
+        System.out.println("Final Representation of MetalAlloy\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
+                .replace("],", "\n").replace(",", "\t| ")
+                .replaceAll("[\\[\\]]", " "));
     }
 
 }

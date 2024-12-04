@@ -1,4 +1,6 @@
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MetalDecomposition {
@@ -14,17 +16,19 @@ public class MetalDecomposition {
     static final int height = 4;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
-    static final int bottomRightTemperature_T = 100;
+    static final int bottomRightTemperature_T = 200;
     static final double METAL_PERCENTAGE = .33;
 
-    // Update this alloy when applying temperature
+    //REAL VARIABLES
+    static boolean partiteLeft = true;
     static MetalCell[][] finalMetalAlloy = new MetalCell[height][width];
 
     public static void main(String[] args) {
+        System.out.println("HEAT_DECOMPOSITION");
         MetalCell[][] metalAlloy = new MetalCell[height][width];
         fillMetalAlloy(metalAlloy);
         MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-        alloy.heatLeftPartition(metalAlloy[0].length/2);
+        alloy.invoke();
     }
 
     /**

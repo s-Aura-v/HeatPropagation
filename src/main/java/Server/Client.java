@@ -6,7 +6,6 @@ import java.net.*;
 public class Client {
     public static void main(String args[]) throws IOException
     {
-        // create a socket to connect to the server running on localhost at port number 9090
         Socket socket = new Socket("localhost", 1997);
 
         // Setup output stream to send data to the server
@@ -24,5 +23,19 @@ public class Client {
 
         // Close the socket
         socket.close();
+    }
+
+    void sendToServer() {
+        try {
+            Socket socket = new Socket("localhost", 1997);
+            OutputStream outputStream = socket.getOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
     }
 }
