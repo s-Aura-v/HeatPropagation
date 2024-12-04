@@ -1,12 +1,11 @@
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-public class MetalAlloy extends RecursiveTask<MetalCell[][]> implements Serializable {
+public class MetalAlloy extends RecursiveAction implements Serializable {
     MetalCell[][] originalMetalAlloy;
-    //    MetalCell[][] leftPartition;
-//    MetalCell[][] rightPartition;
     int topLeftTemperature_S;
     int bottomRightTemperature_T;
 
@@ -17,22 +16,31 @@ public class MetalAlloy extends RecursiveTask<MetalCell[][]> implements Serializ
         this.bottomRightTemperature_T = bottomRightTemperature_T;
     }
 
+    /**
+     * Calculates the left and right partition in Parallel using ForkJoinTask
+     * They share the same reference to originalMetalAlloy so they do not need to be merged after completion.
+     * Implementation Guide:
+     * rightTask.fork(): The program runs the rightTask method in a seperate thread
+     * heatLeftPartition: The program runs the heatMethod for the left Partition while it's waiting for rightPartition to complete
+     * rightTask.join: The program waits until rightTask is complete to continue the program
+     */
     @Override
-    protected MetalCell[][] compute() {
-        int partitionWidth = originalMetalAlloy[0].length/2;
-        if (MetalDecomposition.partiteLeft) {
-            MetalDecomposition.partiteLeft = false;
-            heatLeftPartition(partitionWidth);
-            MetalAlloy rightMetalAlloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-            rightMetalAlloy.fork();
-            heatRightPartition(partitionWidth);
-            mergePartitions(originalMetalAlloy, rightMetalAlloy.originalMetalAlloy);
+    protected void compute() {
+        int partitionWidth = originalMetalAlloy[0].length / 2;
 
-        } else {
-        }
-
-        return originalMetalAlloy;
+        ForkJoinTask<Void> rightTask = new RecursiveTask<Void>() {
+            @Override
+            protected Void compute() {
+                heatRightPartition(partitionWidth);
+                return null;
+            }
+        };
+        rightTask.fork();
+        // Note: Instead of creating another fork, I'm just doing it in the main thread because it has nothing better to do.
+        heatLeftPartition(partitionWidth);
+        rightTask.join();
     }
+
 
     /**
      * Heats the metal alloy
@@ -81,7 +89,7 @@ public class MetalAlloy extends RecursiveTask<MetalCell[][]> implements Serializ
             }
         }
         System.out.println("Left Partition");
-        debug(false);
+        debug();
     }
 
     /**
@@ -122,7 +130,7 @@ public class MetalAlloy extends RecursiveTask<MetalCell[][]> implements Serializ
             }
         }
         System.out.println("Right Partition: ");
-        debug(false);
+        debug();
     }
 
     void redoEdges(int partitionWidth) {
@@ -262,23 +270,9 @@ public class MetalAlloy extends RecursiveTask<MetalCell[][]> implements Serializ
         return copiedMetalAlloy;
     }
 
-    MetalCell[][] mergePartitions(MetalCell[][] leftPartition, MetalCell[][] rightPartition) {
-        MetalCell[][] merged = new MetalCell[leftPartition.length][leftPartition[0].length];
-        int midpoint = leftPartition[0].length / 2;
-        for (int i = 0; i < leftPartition.length; i++) {
-            for (int j = 0; j < midpoint; j++) {
-                merged[i][j] = leftPartition[i][j];
-                merged[i][j+midpoint] = rightPartition[i][j+midpoint];
-            }
-        }
-        return merged;
-    }
-
-
-    void debug(boolean initial) {
+    void debug() {
         System.out.println("Final Representation of MetalAlloy\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
                 .replace("],", "\n").replace(",", "\t| ")
                 .replaceAll("[\\[\\]]", " "));
     }
-
 }
