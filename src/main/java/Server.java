@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 
 public class Server {
     public static void main(String[] args) {
@@ -15,7 +16,7 @@ public class Server {
 
                 // Read the object from the client
                 MetalCell[][] receivedObject = (MetalCell[][]) inputStream.readObject();
-                System.out.println("Received object: " + receivedObject);
+                System.out.println("Received object: " + Arrays.deepToString(receivedObject));
 
                 doCalculations();
 //                outputStream.writeObject(response);
@@ -31,6 +32,6 @@ public class Server {
     }
 
     private static void doCalculations() {
-        System.out.println("add right partition calculation later");
+
     }
 }

@@ -13,8 +13,9 @@ public class ServerClient {
 
             outputStream.writeObject(MetalDecomposition.finalMetalAlloy);
 
-            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
-            System.out.println(Arrays.deepToString(serverFinalMetal));
+            //TODO: Implement this later where I can get the data back from the server
+//            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
+//            System.out.println(inputStream.readObject());
 
             outputStream.close();
             inputStream.close();
@@ -23,8 +24,9 @@ public class ServerClient {
         } catch (IOException e) {
             System.out.println("Server could not be found. Is the server running?");
             throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+//        } catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
         }
     }
 }

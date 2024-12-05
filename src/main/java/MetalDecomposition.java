@@ -34,58 +34,6 @@ public class MetalDecomposition {
 
         ServerClient client = new ServerClient();
         client.sendToServer();
-
-
-    }
-
-    /**
-     *
-     */
-    static void sendToServer() {
-        try {
-            System.out.println("Sent");
-            Socket socket = new Socket("localhost", 1998);
-
-            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-
-            outputStream.writeObject(finalMetalAlloy);
-
-            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
-            System.out.println(Arrays.deepToString(serverFinalMetal));
-
-            outputStream.close();
-            inputStream.close();
-            socket.close();
-
-        } catch (IOException e) {
-            System.out.println("Server could not be found. Is the server running?");
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    static void acceptServer() {
-        try {
-            System.out.println("recieved");
-            ServerSocket serverSocket = new ServerSocket(1998);
-            Socket socket = serverSocket.accept();
-
-            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-
-            MetalCell[][] metalAlloy = (MetalCell[][]) inputStream.readObject();
-            System.out.println(Arrays.deepToString(metalAlloy));
-
-            outputStream.close();
-            inputStream.close();
-            socket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 
