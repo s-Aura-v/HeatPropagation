@@ -1,8 +1,10 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class HeatVisualizer {
-    public static void main(String[] args) {
+
+    void setup() {
         JFrame frame = new JFrame("Heat Visualizer");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -38,13 +40,24 @@ public class HeatVisualizer {
         topPanel.setPreferredSize(new Dimension(frame.getWidth(), 90));
 
         // ALLOY REPRESENTATION
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(Color.BLUE);
+        JPanel bottomPanel = createMetalRepresentation();
 
         frame.add(topPanel, BorderLayout.NORTH);
         frame.add(bottomPanel, BorderLayout.CENTER);
         frame.setSize(1200, 600);
         frame.setVisible(true);
+    }
+
+    JPanel createMetalRepresentation() {
+        JPanel bottomPanel = new JPanel();
+//        g.drawRect(0, 0, bottomPanel.getWidth(), bottomPanel.getHeight());
+
+        return bottomPanel;
+    }
+
+    public static void main(String[] args) {
+        HeatVisualizer heatVisualizer = new HeatVisualizer();
+        heatVisualizer.setup();
     }
 }
 

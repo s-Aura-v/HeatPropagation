@@ -1,3 +1,6 @@
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
@@ -16,11 +19,10 @@ public class MetalDecomposition {
     static final int height = 4;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
-    static final int bottomRightTemperature_T = 200;
+    static final int bottomRightTemperature_T = 100;
     static final double METAL_PERCENTAGE = .33;
 
     //REAL VARIABLES
-    static boolean partiteLeft = true;
     static MetalCell[][] finalMetalAlloy = new MetalCell[height][width];
 
     public static void main(String[] args) {
@@ -29,7 +31,63 @@ public class MetalDecomposition {
         fillMetalAlloy(metalAlloy);
         MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
         alloy.invoke();
+
+        ServerClient client = new ServerClient();
+        client.sendToServer();
+
+
     }
+
+    /**
+     *
+     */
+    static void sendToServer() {
+        try {
+            System.out.println("Sent");
+            Socket socket = new Socket("localhost", 1998);
+
+            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+
+            outputStream.writeObject(finalMetalAlloy);
+
+            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
+            System.out.println(Arrays.deepToString(serverFinalMetal));
+
+            outputStream.close();
+            inputStream.close();
+            socket.close();
+
+        } catch (IOException e) {
+            System.out.println("Server could not be found. Is the server running?");
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static void acceptServer() {
+        try {
+            System.out.println("recieved");
+            ServerSocket serverSocket = new ServerSocket(1998);
+            Socket socket = serverSocket.accept();
+
+            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+
+            MetalCell[][] metalAlloy = (MetalCell[][]) inputStream.readObject();
+            System.out.println(Arrays.deepToString(metalAlloy));
+
+            outputStream.close();
+            inputStream.close();
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     /**
      * Applying a 20% margin of error in the metal count in the array
@@ -47,15 +105,16 @@ public class MetalDecomposition {
     /**
      * Filling the metal alloy with the metal cells composed of 3 metals with unique heat constant.
      * The values represented are PERCENT OF METAL in a cell, not HEAT CONSTANT itself.
+     *
      * @param metalAlloy - the 2d array of Metal Cells with no instantiated values
      * @return metalAlloy - the 2d array of Metal Cells with instantiated values
      * <p>
      * Visualization of Metal Alloy :
      * [HeatConstant1% ;; HeatConstant2% ;; HeatConstant3%]
-        30;;26;;44	|  34;;29;;37	|  34;;34;;32	|  34;;32;;34	|  33;;37;;30	|  35;;26;;39	|  28;;26;;46	|  27;;37;;36
-        36;;35;;29	|  35;;34;;31	|  35;;27;;38	|  29;;37;;34	|  26;;36;;38	|  29;;28;;43	|  29;;32;;39	|  28;;34;;38
-        35;;38;;27	|  27;;28;;45	|  37;;35;;28	|  36;;34;;30	|  33;;34;;33	|  32;;33;;35	|  38;;35;;27	|  32;;36;;32
-        35;;38;;27	|  36;;33;;31	|  27;;38;;35	|  27;;31;;42	|  33;;36;;31	|  30;;35;;35	|  37;;28;;35	|  28;;38;;34
+     * 30;;26;;44	|  34;;29;;37	|  34;;34;;32	|  34;;32;;34	|  33;;37;;30	|  35;;26;;39	|  28;;26;;46	|  27;;37;;36
+     * 36;;35;;29	|  35;;34;;31	|  35;;27;;38	|  29;;37;;34	|  26;;36;;38	|  29;;28;;43	|  29;;32;;39	|  28;;34;;38
+     * 35;;38;;27	|  27;;28;;45	|  37;;35;;28	|  36;;34;;30	|  33;;34;;33	|  32;;33;;35	|  38;;35;;27	|  32;;36;;32
+     * 35;;38;;27	|  36;;33;;31	|  27;;38;;35	|  27;;31;;42	|  33;;36;;31	|  30;;35;;35	|  37;;28;;35	|  28;;38;;34
      */
     static MetalCell[][] fillMetalAlloy(MetalCell[][] metalAlloy) {
         for (int columnIndex = 0; columnIndex < metalAlloy[0].length; columnIndex++) {

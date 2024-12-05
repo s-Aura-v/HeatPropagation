@@ -1,4 +1,6 @@
-public class MetalCell {
+import java.io.Serializable;
+
+public class MetalCell implements Serializable {
     double HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE;
     double HC1_CONSTANT, HC2_CONSTANT, HC3_CONSTANT;
     double temperature;
