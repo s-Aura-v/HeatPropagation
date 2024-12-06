@@ -1,22 +1,46 @@
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-public class MetalAlloy extends RecursiveAction implements Serializable {
+public class MetalAlloy implements Serializable, Runnable {
     MetalCell[][] originalMetalAlloy;
-    int topLeftTemperature_S;
-    int bottomRightTemperature_T;
+    MetalCell[][] finalMetalAlloy;
+    double topLeftTemperature_S;
+    double bottomRightTemperature_T;
+    boolean leftPartition;
+    int partitionWidth;
 
-    public MetalAlloy(MetalCell[][] metalAlloy, int topLeftTemperature_S, int bottomRightTemperature_T) {
+    /**
+     * The Constructor to run locally
+     */
+    public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T) {
         System.out.println("METAL_ALLOY");
         this.originalMetalAlloy = metalAlloy;
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
+        this.partitionWidth = metalAlloy[0].length / 2;
     }
 
     /**
+     * The Constructor to run remotely
+     */
+    public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean leftPartition) {
+        System.out.println("METAL_ALLOY");
+        this.originalMetalAlloy = metalAlloy;
+        this.topLeftTemperature_S = topLeftTemperature_S;
+        this.bottomRightTemperature_T = bottomRightTemperature_T;
+        this.leftPartition = leftPartition;
+    }
+
+    /**
+     * The calculation will be done in ONE MACHINE.
+     * <p>
      * Calculates the left and right partition in Parallel using ForkJoinTask
      * They share the same reference to originalMetalAlloy so they do not need to be merged after completion.
      * Implementation Guide:
@@ -24,23 +48,64 @@ public class MetalAlloy extends RecursiveAction implements Serializable {
      * heatLeftPartition: The program runs the heatMethod for the left Partition while it's waiting for rightPartition to complete
      * rightTask.join: The program waits until rightTask is complete to continue the program
      */
-    @Override
-    protected void compute() {
+    public void compute() {
+        double startTime = System.currentTimeMillis();
         int partitionWidth = originalMetalAlloy[0].length / 2;
 
         ForkJoinTask<Void> rightTask = new RecursiveTask<Void>() {
             @Override
             protected Void compute() {
-                heatRightPartition(partitionWidth);
+                heatRightPartition();
                 return null;
             }
         };
         rightTask.fork();
         // Note: Instead of creating another fork, I'm just doing it in the main thread because it has nothing better to do.
-        heatLeftPartition(partitionWidth);
+        heatLeftPartition();
         rightTask.join();
+        double endTime = System.currentTimeMillis();
+        System.out.println(endTime - startTime + "ms");
     }
 
+
+    /**
+     * The calculation will be completed in TWO MACHINES; SERVER <-> LOCAL MACHINE
+     * The server will do the right partition while the machine will do the left partition.
+     */
+    @Override
+    public void run() {
+        if (leftPartition) {
+            sendToServer();
+            heatLeftPartition();
+        } else {
+            heatRightPartition();
+        }
+    }
+
+    void sendToServer() {
+        try {
+            Socket socket = new Socket("gee.cs.oswego.edu", 1998);
+
+            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+
+            outputStream.writeObject(MetalDecomposition.finalMetalAlloy);
+
+            //TODO: Implement this later where I can get the data back from the server
+//            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
+//            System.out.println(inputStream.readObject());
+
+            outputStream.close();
+            inputStream.close();
+            socket.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+//        } catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+        }
+    }
 
     /**
      * Heats the metal alloy
@@ -56,7 +121,7 @@ public class MetalAlloy extends RecursiveAction implements Serializable {
      * temp_n is the temperature of the neighboring region n.
      * p_n_m is the percentage of metal m in neighbor n.
      */
-    void heatLeftPartition(int partitionWidth) {
+    void heatLeftPartition() {
         for (int a = 0; a < 10000; a++) {
             originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
             for (int i = 0; i < originalMetalAlloy.length; i++) {
@@ -94,10 +159,9 @@ public class MetalAlloy extends RecursiveAction implements Serializable {
 
     /**
      * Heat Right Partition - Bottom right to center
-     *
-     * @param partitionWidth
+     * Same logic as the method above [heatLeftPartition]
      */
-    void heatRightPartition(int partitionWidth) {
+    void heatRightPartition() {
         for (int a = 0; a < 10000; a++) {
             originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
             for (int i = originalMetalAlloy.length - 1; i >= 0; i--) {
@@ -275,4 +339,5 @@ public class MetalAlloy extends RecursiveAction implements Serializable {
                 .replace("],", "\n").replace(",", "\t| ")
                 .replaceAll("[\\[\\]]", " "));
     }
+
 }

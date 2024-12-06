@@ -22,7 +22,6 @@ public class ServerClient {
             socket.close();
 
         } catch (IOException e) {
-            System.out.println("Server could not be found. Is the server running?");
             throw new RuntimeException(e);
 //        } catch (ClassNotFoundException e) {
 //            throw new RuntimeException(e);

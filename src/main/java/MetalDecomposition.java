@@ -30,10 +30,12 @@ public class MetalDecomposition {
         MetalCell[][] metalAlloy = new MetalCell[height][width];
         fillMetalAlloy(metalAlloy);
         MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-        alloy.invoke();
+        alloy.compute();
 
-        ServerClient client = new ServerClient();
-        client.sendToServer();
+        if (false) {
+            MetalAlloy serverAlloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T, true);
+            serverAlloy.run();
+        }
     }
 
 
