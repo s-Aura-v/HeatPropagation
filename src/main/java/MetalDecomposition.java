@@ -27,15 +27,42 @@ public class MetalDecomposition {
 
     public static void main(String[] args) {
         System.out.println("HEAT_DECOMPOSITION");
-        MetalCell[][] metalAlloy = new MetalCell[height][width];
-        fillMetalAlloy(metalAlloy);
-        MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-        alloy.compute();
-
-        if (false) {
-            MetalAlloy serverAlloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T, true);
+        boolean local = false;
+        if (local) {
+            MetalCell[][] metalAlloy = new MetalCell[height][width];
+            fillMetalAlloy(metalAlloy);
+            MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
+            alloy.compute();
+        } else {
+            MetalCell[][] metalAlloy = new MetalCell[height][width];
+            fillMetalAlloy(metalAlloy);
+            MetalCell[][] finalMetalAlloy = copyMetalAlloy(metalAlloy);
+            MetalAlloy serverAlloy = new MetalAlloy(metalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, true);
             serverAlloy.run();
         }
+    }
+
+    /**
+     * A deep copy of MetalAlloy that creates new references to MetalCell.
+     *
+     * @param metalAlloy - the 2d array to be copied
+     * @return copiedMetalAlloy - the copy of metalAlloy with new references
+     */
+    static MetalCell[][] copyMetalAlloy(MetalCell[][] metalAlloy) {
+        MetalCell[][] copiedMetalAlloy = new MetalCell[metalAlloy.length][metalAlloy[0].length];
+        for (int i = 0; i < copiedMetalAlloy.length; i++) {
+            for (int j = 0; j < copiedMetalAlloy[i].length; j++) {
+                copiedMetalAlloy[i][j] = new MetalCell(
+                        metalAlloy[i][j].getHC1_PERCENTAGE(),
+                        metalAlloy[i][j].getHC2_PERCENTAGE(),
+                        metalAlloy[i][j].getHC3_PERCENTAGE(),
+                        metalAlloy[i][j].getHC1_CONSTANT(),
+                        metalAlloy[i][j].getHC2_CONSTANT(),
+                        metalAlloy[i][j].getHC3_CONSTANT());
+                copiedMetalAlloy[i][j].setTemperature(metalAlloy[i][j].getTemperature());
+            }
+        }
+        return copiedMetalAlloy;
     }
 
 

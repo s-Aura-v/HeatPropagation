@@ -4,11 +4,12 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-public class MetalAlloy implements Serializable, Runnable {
+public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
     MetalCell[][] originalMetalAlloy;
     MetalCell[][] finalMetalAlloy;
     double topLeftTemperature_S;
@@ -31,9 +32,10 @@ public class MetalAlloy implements Serializable, Runnable {
     /**
      * The Constructor to run remotely
      */
-    public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean leftPartition) {
+    public MetalAlloy(MetalCell[][] metalAlloy, MetalCell[][] finalMetalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean leftPartition) {
         System.out.println("METAL_ALLOY");
         this.originalMetalAlloy = metalAlloy;
+        this.finalMetalAlloy = finalMetalAlloy;
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
         this.leftPartition = leftPartition;
@@ -45,13 +47,12 @@ public class MetalAlloy implements Serializable, Runnable {
      * Calculates the left and right partition in Parallel using ForkJoinTask
      * They share the same reference to originalMetalAlloy so they do not need to be merged after completion.
      * Implementation Guide:
-     * rightTask.fork(): The program runs the rightTask method in a seperate thread
+     * rightTask.fork(): The program runs the rightTask method in a separate thread
      * heatLeftPartition: The program runs the heatMethod for the left Partition while it's waiting for rightPartition to complete
      * rightTask.join: The program waits until rightTask is complete to continue the program
      */
     public void compute() {
         double startTime = System.currentTimeMillis();
-        int partitionWidth = originalMetalAlloy[0].length / 2;
 
         ForkJoinTask<Void> rightTask = new RecursiveTask<Void>() {
             @Override
@@ -73,7 +74,6 @@ public class MetalAlloy implements Serializable, Runnable {
      * The calculation will be completed in TWO MACHINES; SERVER <-> LOCAL MACHINE
      * The server will do the right partition while the machine will do the left partition.
      */
-    @Override
     public void run() {
         if (leftPartition) {
             sendToServer();
@@ -83,9 +83,26 @@ public class MetalAlloy implements Serializable, Runnable {
         }
     }
 
+    /**
+     * FinalMetalAlloy is the returned so that it can be worked on again
+     * This is used by Callable<MetalCell[][]>
+     */
+    @Override
+    public MetalCell[][] call() throws Exception {
+        if (leftPartition) {
+            sendToServer();
+            heatLeftPartition();
+        } else {
+            heatRightPartition();
+            return finalMetalAlloy;
+        }
+
+        return finalMetalAlloy;
+    }
+
     void sendToServer() {
         try {
-            Socket socket = new Socket("gee.cs.oswego.edu", 1998);
+            Socket socket = new Socket("localhost", 1998);
 
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());

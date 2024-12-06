@@ -1,6 +1,10 @@
 import java.io.*;
 import java.net.*;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 /**
  * Calculate the right partition work in a server and send it back to local machine
@@ -21,12 +25,17 @@ public class Server {
                 MetalCell[][] receivedObject = (MetalCell[][]) inputStream.readObject();
                 double topLeftTemperature_S = receivedObject[0][0].getTemperature();
                 double bottomRightTemperature_T = receivedObject[receivedObject.length - 1][receivedObject[0].length - 1].getTemperature();
-                MetalAlloy metalAlloy = new MetalAlloy(receivedObject, topLeftTemperature_S, bottomRightTemperature_T, false);
-                metalAlloy.run();
-                System.out.println("Received object: " + Arrays.deepToString(receivedObject));
+                MetalAlloy metalAlloy = new MetalAlloy(receivedObject, receivedObject, topLeftTemperature_S, bottomRightTemperature_T, false);
+                ExecutorService executorService = Executors.newCachedThreadPool();
+                Future<MetalCell[][]> metalAlloyFuture = executorService.submit(metalAlloy);
+                MetalCell[][] finalMetalAlloy = metalAlloyFuture.get();
+                System.out.println("Received: \n" + Arrays.deepToString(finalMetalAlloy)
+                        .replace("],", "\n").replace(",", "\t| ")
+                        .replaceAll("[\\[\\]]", " "));
 
-                outputStream.writeObject(MetalDecomposition.finalMetalAlloy);
+                outputStream.writeObject(finalMetalAlloy);
 
+                executorService.shutdown();
                 outputStream.flush();  // Make sure data is sent
                 inputStream.close();
                 outputStream.close();
@@ -34,6 +43,9 @@ public class Server {
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+            //CALLABLE REQUIRES YOU TO THROW EXCEPTION
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
