@@ -22,6 +22,7 @@ public class MetalAlloy implements Serializable, Runnable {
     public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T) {
         System.out.println("METAL_ALLOY");
         this.originalMetalAlloy = metalAlloy;
+        this.finalMetalAlloy = copyMetalAlloy(metalAlloy);
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
         this.partitionWidth = metalAlloy[0].length / 2;
@@ -89,7 +90,7 @@ public class MetalAlloy implements Serializable, Runnable {
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 
-            outputStream.writeObject(MetalDecomposition.finalMetalAlloy);
+            outputStream.writeObject(finalMetalAlloy);
 
             //TODO: Implement this later where I can get the data back from the server
 //            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
@@ -123,7 +124,7 @@ public class MetalAlloy implements Serializable, Runnable {
      */
     void heatLeftPartition() {
         for (int a = 0; a < 10000; a++) {
-            originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
+            originalMetalAlloy = copyMetalAlloy(finalMetalAlloy);
             for (int i = 0; i < originalMetalAlloy.length; i++) {
                 for (int j = 0; j < partitionWidth; j++) {
                     double[] listOfTemperatures = new double[3];
@@ -146,9 +147,9 @@ public class MetalAlloy implements Serializable, Runnable {
                     }
                     // ADDING THE SUMMATION TO THE CELL
                     if ((i == 0 && j == 0)) {
-                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
+                        finalMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
                     } else {
-                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                        finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                     }
                 }
             }
@@ -163,7 +164,7 @@ public class MetalAlloy implements Serializable, Runnable {
      */
     void heatRightPartition() {
         for (int a = 0; a < 10000; a++) {
-            originalMetalAlloy = copyMetalAlloy(MetalDecomposition.finalMetalAlloy);
+            originalMetalAlloy = copyMetalAlloy(finalMetalAlloy);
             for (int i = originalMetalAlloy.length - 1; i >= 0; i--) {
                 for (int j = originalMetalAlloy[0].length - 1; j >= partitionWidth; j--) {
                     double[] listOfTemperatures = new double[3];
@@ -185,10 +186,10 @@ public class MetalAlloy implements Serializable, Runnable {
                         listOfTemperatures[k] = temp;
                     }
                     // ADDING THE SUMMATION TO THE CELL
-                    if ((i == MetalDecomposition.finalMetalAlloy.length - 1 && j == MetalDecomposition.finalMetalAlloy[0].length - 1)) {
-                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(bottomRightTemperature_T);
+                    if ((i == finalMetalAlloy.length - 1 && j == finalMetalAlloy[0].length - 1)) {
+                        finalMetalAlloy[i][j].setTemperature(bottomRightTemperature_T);
                     } else {
-                        MetalDecomposition.finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                        finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                     }
                 }
             }
@@ -334,8 +335,21 @@ public class MetalAlloy implements Serializable, Runnable {
         return copiedMetalAlloy;
     }
 
+    MetalCell[][] mergePartitions(MetalCell[][] leftPartition, MetalCell[][] rightPartition) {
+        MetalCell[][] merged = new MetalCell[leftPartition.length][leftPartition[0].length];
+        int midpoint = leftPartition[0].length / 2;
+        for (int i = 0; i < leftPartition.length; i++) {
+            for (int j = 0; j < midpoint; j++) {
+                merged[i][j] = leftPartition[i][j];
+                merged[i][j+midpoint] = rightPartition[i][j+midpoint];
+            }
+        }
+        return merged;
+    }
+
+
     void debug() {
-        System.out.println("Final Representation of MetalAlloy\n" + Arrays.deepToString(MetalDecomposition.finalMetalAlloy)
+        System.out.println("Final Representation of MetalAlloy\n" + Arrays.deepToString(finalMetalAlloy)
                 .replace("],", "\n").replace(",", "\t| ")
                 .replaceAll("[\\[\\]]", " "));
     }
