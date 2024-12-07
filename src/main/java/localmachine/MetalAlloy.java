@@ -26,18 +26,6 @@ public class MetalAlloy implements Serializable {
     }
 
     /**
-     * The Constructor to run remotely
-     */
-    public MetalAlloy(MetalCell[][] metalAlloy, MetalCell[][] finalMetalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean leftPartition) {
-        System.out.println("METAL_ALLOY");
-        this.originalMetalAlloy = metalAlloy;
-        this.finalMetalAlloy = finalMetalAlloy;
-        this.topLeftTemperature_S = topLeftTemperature_S;
-        this.bottomRightTemperature_T = bottomRightTemperature_T;
-        this.leftPartition = leftPartition;
-    }
-
-    /**
      * The calculation will be done in ONE MACHINE.
      * <p>
      * Calculates the left and right partition in Parallel using ForkJoinTask

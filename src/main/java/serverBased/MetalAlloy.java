@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
-public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
+public class MetalAlloy implements Serializable {
     MetalCell[][] originalMetalAlloy;
     MetalCell[][] finalMetalAlloy;
     double topLeftTemperature_S;
@@ -20,7 +20,6 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
      * The Constructor to run remotely
      */
     public MetalAlloy(MetalCell[][] metalAlloy, MetalCell[][] finalMetalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft) {
-        System.out.println("METAL_ALLOY");
         this.originalMetalAlloy = metalAlloy;
         this.finalMetalAlloy = finalMetalAlloy;
 
@@ -34,28 +33,23 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
      * FinalMetalAlloy is the returned so that it can be worked on again
      * This is used by Callable<MetalCell[][]>
      */
-    @Override
-    public MetalCell[][] call() throws Exception {
-        MetalCell[][] leftPartition = new MetalCell[0][0];
-        MetalCell[][] rightPartition = new MetalCell[0][0];
-        if (shouldComputeLeft) {
-            sendToServer();
-            leftPartition = heatLeftPartition(copyMetalAlloy(originalMetalAlloy));
-        } else {
-            rightPartition = heatRightPartition(copyMetalAlloy(originalMetalAlloy));
-        }
-        Thread.sleep(1000);
-        System.out.println("Original Metal Alloy\n" + Arrays.deepToString(leftPartition)
+    public MetalCell[][] callLeftPartition() {
+        MetalCell[][] metalAlloy = new MetalCell[0][0];
+        metalAlloy = heatLeftPartition(copyMetalAlloy(originalMetalAlloy));
+        System.out.println("Called Left\n" + Arrays.deepToString(metalAlloy)
                 .replace("],", "\n").replace(",", "\t| ")
                 .replaceAll("[\\[\\]]", " "));
-        System.out.println("Final Metal Alloy\n" + Arrays.deepToString(rightPartition)
-                .replace("],", "\n").replace(",", "\t| ")
-                .replaceAll("[\\[\\]]", " "));
-        return new MetalCell[0][0];
+        return metalAlloy;
     }
 
-    void sendToServer() {
+    public MetalCell[][] callRightPartition() {
+        MetalCell[][] metalAlloy;
+        metalAlloy = heatRightPartition(copyMetalAlloy(originalMetalAlloy));
+        return metalAlloy;
+    }
 
+    public MetalCell[][] callServer() {
+        MetalCell[][] serverFinalMetal = new MetalCell[0][0];
         try {
             Socket socket = new Socket("localhost", 1998);
 
@@ -63,18 +57,26 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 
             outputStream.writeObject(originalMetalAlloy);
+            System.out.println("Object Written to Server");
 
             //TODO: Implement this later where I can get the data back from the server
-//            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
-//            System.out.println(inputStream.readObject());
+            serverFinalMetal = (MetalCell[][]) inputStream.readObject();
+            System.out.println("Waiting for Server Output");
+            boolean caughtOutput = false;
+            while (!caughtOutput) {
+                System.out.println(inputStream.readObject());
+                System.out.println("Server Output Read");
+                caughtOutput = true;
+            }
 
             outputStream.close();
             inputStream.close();
             socket.close();
 
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+        return serverFinalMetal;
     }
 
     /**
@@ -120,8 +122,6 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
                 }
             }
         }
-        System.out.println("Left Partition");
-        debug();
         return metalAlloyCopy;
     }
 
@@ -152,9 +152,9 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
                 }
                 // ADDING THE SUMMATION TO THE CELL
                 if ((i == finalMetalAlloy.length - 1 && j == finalMetalAlloy[0].length - 1)) {
-                    finalMetalAlloy[i][j].setTemperature(bottomRightTemperature_T);
+                    rightPartitionCopy[i][j].setTemperature(bottomRightTemperature_T);
                 } else {
-                    finalMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                    rightPartitionCopy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                 }
             }
         }

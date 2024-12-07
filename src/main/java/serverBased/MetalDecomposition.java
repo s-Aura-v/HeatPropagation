@@ -28,9 +28,13 @@ public class MetalDecomposition {
         MetalCell[][] metalAlloy = new MetalCell[height][width];
         fillMetalAlloy(metalAlloy);
         MetalCell[][] finalMetalAlloy = copyMetalAlloy(metalAlloy);
-        MetalAlloy serverAlloy = new MetalAlloy(metalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, true);
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(serverAlloy);
+        MetalAlloy alloy = new MetalAlloy(metalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, true);
+        MetalCell[][] leftPartition = alloy.callLeftPartition();
+        MetalCell[][] rightPartition = alloy.callServer();
+        MetalCell[][] combinedPartition = alloy.mergePartitions(leftPartition, rightPartition);
+        System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
+                .replace("],", "\n").replace(",", "\t| ")
+                .replaceAll("[\\[\\]]", " "));
     }
 
     /**
@@ -67,7 +71,7 @@ public class MetalDecomposition {
 
         HC1_PERCENTAGE = .33;
         HC2_PERCENTAGE = .33;
-        HC3_PERCENTAGE = .33;
+        HC3_PERCENTAGE = .34;
     }
 
     /**

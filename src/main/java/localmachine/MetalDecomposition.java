@@ -1,6 +1,7 @@
 package localmachine;
 
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MetalDecomposition {
 
@@ -57,11 +58,15 @@ public class MetalDecomposition {
      * Applying a 20% margin of error in the metal count in the array
      */
     static void calculateHeatConstantProportion() {
-//        HC1_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
-//        HC2_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
-//        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
-
-        HC1_PERCENTAGE = .33;
+//        int metalPercentage = (int) (METAL_PERCENTAGE * 100);
+//        int hc1_temp = ThreadLocalRandom.current().nextInt((int) (metalPercentage * 0.8), (int) ( metalPercentage * 1.2));
+//        int hc2_temp = ThreadLocalRandom.current().nextInt((int) (metalPercentage * 0.8), (int) (metalPercentage * 1.2));
+//        int hc3_temp = 100 - hc1_temp - hc2_temp;
+//
+//        HC1_PERCENTAGE = (double) hc1_temp;
+//        HC2_PERCENTAGE = (double) hc2_temp;
+//        HC3_PERCENTAGE = (double) hc3_temp;
+        HC1_PERCENTAGE = .34;
         HC2_PERCENTAGE = .33;
         HC3_PERCENTAGE = .33;
     }

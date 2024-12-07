@@ -30,19 +30,18 @@ public class Server {
                 double topLeftTemperature_S = originalMetalAlloy[0][0].getTemperature();
                 double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
                 MetalCell[][] finalMetalAlloy = MetalDecomposition.copyMetalAlloy(originalMetalAlloy);
-                MetalAlloy metalAlloy = new MetalAlloy(originalMetalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, false);
+                MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, false);
+                System.out.println("Metal Alloy Created");
 
                 // Executing right partition
-                ExecutorService executorService = Executors.newSingleThreadExecutor();
-                Future<MetalCell[][]> metalAlloyFuture = executorService.submit(metalAlloy);
-                MetalCell[][] calculatedMetalAlloy = metalAlloyFuture.get();
-                System.out.println("Received: \n" + Arrays.deepToString(finalMetalAlloy)
+                MetalCell[][] rightPartition = alloy.callRightPartition();
+
+                System.out.println("Server Calculated: \n" + Arrays.deepToString(rightPartition)
                         .replace("],", "\n").replace(",", "\t| ")
                         .replaceAll("[\\[\\]]", " "));
 
-//                outputStream.writeObject(finalMetalAlloy);
+                outputStream.writeObject(rightPartition);
 
-                executorService.shutdown();
                 outputStream.flush();  // Make sure data is sent
                 inputStream.close();
                 outputStream.close();
@@ -55,5 +54,4 @@ public class Server {
             throw new RuntimeException(e);
         }
     }
-
 }
