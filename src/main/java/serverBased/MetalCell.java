@@ -6,7 +6,6 @@ public class MetalCell implements Serializable {
     double HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE;
     double HC1_CONSTANT, HC2_CONSTANT, HC3_CONSTANT;
     double temperature;
-    boolean border;
 
     public MetalCell(double HC1_PERCENTAGE, double HC2_PERCENTAGE, double HC3_PERCENTAGE, double HC1_CONSTANT, double HC2_CONSTANT, double HC3_CONSTANT) {
         this.HC1_PERCENTAGE = HC1_PERCENTAGE;
@@ -75,7 +74,6 @@ public class MetalCell implements Serializable {
 
     @Override
     public String toString() {
-//        return "" + HC1_PERCENTAGE + ";;" + HC2_PERCENTAGE + ";;" + HC3_PERCENTAGE;
         return temperature + "";
     }
 }

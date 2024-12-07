@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 
 public class MetalAlloy implements Serializable {
     MetalCell[][] originalMetalAlloy;
@@ -15,12 +14,8 @@ public class MetalAlloy implements Serializable {
     int partitionWidth;
     boolean shouldComputeLeft;
 
-    /**
-     * The Constructor to run remotely
-     */
     public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft) {
         this.originalMetalAlloy = metalAlloy;
-
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
         this.shouldComputeLeft = shouldComputeLeft;
@@ -28,8 +23,8 @@ public class MetalAlloy implements Serializable {
     }
 
     /**
-     * FinalMetalAlloy is the returned so that it can be worked on again
-     * This is used by Callable<MetalCell[][]>
+     * Used to calculate the left partition locally.
+     * @return MetalCell[][] - Sent back to the main method to be merged with RightPartition
      */
     public MetalCell[][] callLeftPartition() {
         MetalCell[][] metalAlloy = new MetalCell[0][0];
@@ -40,16 +35,25 @@ public class MetalAlloy implements Serializable {
         return metalAlloy;
     }
 
+    /**
+     * Used to calculate the right partition remotely through a server.
+     * @return MetalCell[][] - Sent back to the main method to be merged with Right Partition
+     */
+
     public MetalCell[][] callRightPartition() {
         MetalCell[][] metalAlloy;
         metalAlloy = heatRightPartition(copyMetalAlloy(originalMetalAlloy));
         return metalAlloy;
     }
 
+    /**
+     * Sends the right partition to the server so it can heat it up, which is sent back locally, to be merged with Left Partition.
+     * @return MetalCell[][] - Sent back to the main method to be merged with Left Partition
+     */
     public MetalCell[][] callServer() {
         MetalCell[][] serverFinalMetal = new MetalCell[0][0];
         try {
-            Socket socket = new Socket("localhost", 1998);
+            Socket socket = new Socket(MetalDecomposition.SERVER_HOST, 1998);
 
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
@@ -57,7 +61,6 @@ public class MetalAlloy implements Serializable {
             outputStream.writeObject(originalMetalAlloy);
             System.out.println("Object Written to Server");
 
-            //TODO: Implement this later where I can get the data back from the server
             serverFinalMetal = (MetalCell[][]) inputStream.readObject();
             System.out.println("Waiting for Server Output");
             boolean caughtOutput = false;
@@ -297,6 +300,9 @@ public class MetalAlloy implements Serializable {
         return copiedMetalAlloy;
     }
 
+    /**
+     * Merge left and right partition into one merged partition.
+     */
     MetalCell[][] mergePartitions(MetalCell[][] leftPartition, MetalCell[][] rightPartition) {
         MetalCell[][] merged = new MetalCell[leftPartition.length][leftPartition[0].length];
         int midpoint = leftPartition[0].length / 2;

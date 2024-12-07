@@ -10,12 +10,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+
 /**
  * Calculate the right partition work in a server and send it back to local machine
+ * The server should be running in the background before you MetalDecomposition as the results of the latter is dependent on that of the execution of former.
  */
 public class Server {
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(1998)) {
+        try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
             System.out.println("Waiting for connection...");
 
             while (true) {
@@ -29,27 +31,23 @@ public class Server {
                 MetalCell[][] originalMetalAlloy = (MetalCell[][]) inputStream.readObject();
                 double topLeftTemperature_S = originalMetalAlloy[0][0].getTemperature();
                 double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
-                MetalCell[][] finalMetalAlloy = MetalDecomposition.copyMetalAlloy(originalMetalAlloy);
-                MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, false);
+                MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, MetalDecomposition.SHOULD_COMPUTE_LEFT);
                 System.out.println("Metal Alloy Created");
 
                 // Executing right partition
                 MetalCell[][] rightPartition = alloy.callRightPartition();
-
                 System.out.println("Server Calculated: \n" + Arrays.deepToString(rightPartition)
                         .replace("],", "\n").replace(",", "\t| ")
                         .replaceAll("[\\[\\]]", " "));
 
                 outputStream.writeObject(rightPartition);
-
-                outputStream.flush();  // Make sure data is sent
+                outputStream.flush();
                 inputStream.close();
                 outputStream.close();
                 clientSocket.close();
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-            //CALLABLE REQUIRES YOU TO THROW EXCEPTION
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

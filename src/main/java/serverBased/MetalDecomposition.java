@@ -1,16 +1,12 @@
 package serverBased;
 
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class MetalDecomposition {
 
-    public static final boolean debug = true;
-
-    static final double HEATCONSTANT_1 = .75;
-    static final double HEATCONSTANT_2 = 1.0;
-    static final double HEATCONSTANT_3 = 1.25;
+    static final double HEAT_CONSTANT_1 = .75;
+    static final double HEAT_CONSTANT_2 = 1.0;
+    static final double HEAT_CONSTANT_3 = 1.25;
     static double HC1_PERCENTAGE;
     static double HC2_PERCENTAGE;
     static double HC3_PERCENTAGE;
@@ -19,9 +15,9 @@ public class MetalDecomposition {
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;
     static final double METAL_PERCENTAGE = .33;
-
-    //REAL VARIABLES
-    static MetalCell[][] finalMetalAlloy = new MetalCell[height][width];
+    static int PORT = 1998;
+    static boolean SHOULD_COMPUTE_LEFT = false;
+    static String SERVER_HOST = "localhost";
 
     public static void main(String[] args) {
         System.out.println("HEAT_DECOMPOSITION");
@@ -61,9 +57,9 @@ public class MetalDecomposition {
         return copiedMetalAlloy;
     }
 
-
     /**
-     * Applying a 20% margin of error in the metal count in the array
+     * Calculates the composition of MetalCell.
+     * Each MetalCell is made up of three metals, taking up ~33% of the metal, with a 20% margin of error.
      */
     static void calculateHeatConstantProportion() {
 //        HC1_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
@@ -76,11 +72,14 @@ public class MetalDecomposition {
     }
 
     /**
-     * Filling the metal alloy with the metal cells composed of 3 metals with unique heat constant.
+     * Initializes the Metal Alloy (MetalCell[][]) with metal cells, each with a unique composition, based on the method calculateHeatConstantProportion,
+     * and a temperature of 0.
+     * Special Case: Initializes the temperature of top left and bottom right based on the class variables as they are responsible for heating up
+     * the metal.
      * The values represented are PERCENT OF METAL in a cell, not HEAT CONSTANT itself.
      *
      * @param metalAlloy - the 2d array of Metal Cells with no instantiated values
-     * @return metalAlloy - the 2d array of Metal Cells with instantiated values
+     * No return type as the changes to the Metal Alloy is not local.
      * <p>
      * Visualization of Metal Alloy :
      * [HeatConstant1% ;; HeatConstant2% ;; HeatConstant3%]
@@ -89,25 +88,15 @@ public class MetalDecomposition {
      * 35;;38;;27	|  27;;28;;45	|  37;;35;;28	|  36;;34;;30	|  33;;34;;33	|  32;;33;;35	|  38;;35;;27	|  32;;36;;32
      * 35;;38;;27	|  36;;33;;31	|  27;;38;;35	|  27;;31;;42	|  33;;36;;31	|  30;;35;;35	|  37;;28;;35	|  28;;38;;34
      */
-    static MetalCell[][] fillMetalAlloy(MetalCell[][] metalAlloy) {
+    static void fillMetalAlloy(MetalCell[][] metalAlloy) {
         for (int columnIndex = 0; columnIndex < metalAlloy[0].length; columnIndex++) {
             for (int rowIndex = 0; rowIndex < metalAlloy.length; rowIndex++) {
                 calculateHeatConstantProportion();
-                metalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE, HEATCONSTANT_1, HEATCONSTANT_2, HEATCONSTANT_3);
+                metalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE, HEAT_CONSTANT_1, HEAT_CONSTANT_2, HEAT_CONSTANT_3);
                 metalAlloy[rowIndex][columnIndex].setTemperature(0);
-                finalMetalAlloy[rowIndex][columnIndex] = new MetalCell(HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE, HEATCONSTANT_1, HEATCONSTANT_2, HEATCONSTANT_3);
-                finalMetalAlloy[rowIndex][columnIndex].setTemperature(0);
             }
         }
         metalAlloy[0][0].setTemperature(topLeftTemperature_S);
         metalAlloy[metalAlloy.length - 1][metalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
-        finalMetalAlloy[0][0].setTemperature(topLeftTemperature_S);
-        finalMetalAlloy[metalAlloy.length - 1][metalAlloy[0].length - 1].setTemperature(bottomRightTemperature_T);
-        if (debug) {
-            System.out.println("Original Metal Alloy\n" + Arrays.deepToString(metalAlloy)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-        }
-        return metalAlloy;
     }
 }
