@@ -30,7 +30,7 @@ public class Server {
                 double topLeftTemperature_S = originalMetalAlloy[0][0].getTemperature();
                 double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
                 MetalCell[][] finalMetalAlloy = MetalDecomposition.copyMetalAlloy(originalMetalAlloy);
-                MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, false);
+                MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, false);
                 System.out.println("Metal Alloy Created");
 
                 // Executing right partition

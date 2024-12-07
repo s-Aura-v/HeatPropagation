@@ -13,7 +13,7 @@ public class MetalDecomposition {
     static double HC1_PERCENTAGE;
     static double HC2_PERCENTAGE;
     static double HC3_PERCENTAGE;
-    static final int height = 4;
+    static final int height = 8;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;

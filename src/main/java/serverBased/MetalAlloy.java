@@ -10,7 +10,6 @@ import java.util.concurrent.Callable;
 
 public class MetalAlloy implements Serializable {
     MetalCell[][] originalMetalAlloy;
-    MetalCell[][] finalMetalAlloy;
     double topLeftTemperature_S;
     double bottomRightTemperature_T;
     int partitionWidth;
@@ -19,9 +18,8 @@ public class MetalAlloy implements Serializable {
     /**
      * The Constructor to run remotely
      */
-    public MetalAlloy(MetalCell[][] metalAlloy, MetalCell[][] finalMetalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft) {
+    public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft) {
         this.originalMetalAlloy = metalAlloy;
-        this.finalMetalAlloy = finalMetalAlloy;
 
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
@@ -64,7 +62,7 @@ public class MetalAlloy implements Serializable {
             System.out.println("Waiting for Server Output");
             boolean caughtOutput = false;
             while (!caughtOutput) {
-                System.out.println(inputStream.readObject());
+                System.out.println(Arrays.deepToString(serverFinalMetal));
                 System.out.println("Server Output Read");
                 caughtOutput = true;
             }
@@ -151,7 +149,7 @@ public class MetalAlloy implements Serializable {
                     listOfTemperatures[k] = temp;
                 }
                 // ADDING THE SUMMATION TO THE CELL
-                if ((i == finalMetalAlloy.length - 1 && j == finalMetalAlloy[0].length - 1)) {
+                if ((i == rightPartitionCopy.length - 1 && j == rightPartitionCopy[0].length - 1)) {
                     rightPartitionCopy[i][j].setTemperature(bottomRightTemperature_T);
                 } else {
                     rightPartitionCopy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
@@ -159,7 +157,6 @@ public class MetalAlloy implements Serializable {
             }
         }
         System.out.println("Right Partition: ");
-        debug();
         return rightPartitionCopy;
     }
 
@@ -312,11 +309,5 @@ public class MetalAlloy implements Serializable {
         return merged;
     }
 
-
-    void debug() {
-        System.out.println("Final Representation of MetalAlloy\n" + Arrays.deepToString(finalMetalAlloy)
-                .replace("],", "\n").replace(",", "\t| ")
-                .replaceAll("[\\[\\]]", " "));
-    }
 
 }

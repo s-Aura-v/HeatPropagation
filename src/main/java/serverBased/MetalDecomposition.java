@@ -25,16 +25,17 @@ public class MetalDecomposition {
 
     public static void main(String[] args) {
         System.out.println("HEAT_DECOMPOSITION");
-        MetalCell[][] metalAlloy = new MetalCell[height][width];
-        fillMetalAlloy(metalAlloy);
-        MetalCell[][] finalMetalAlloy = copyMetalAlloy(metalAlloy);
-        MetalAlloy alloy = new MetalAlloy(metalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, true);
-        MetalCell[][] leftPartition = alloy.callLeftPartition();
-        MetalCell[][] rightPartition = alloy.callServer();
-        MetalCell[][] combinedPartition = alloy.mergePartitions(leftPartition, rightPartition);
-        System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
-                .replace("],", "\n").replace(",", "\t| ")
-                .replaceAll("[\\[\\]]", " "));
+        MetalCell[][] combinedPartition = new MetalCell[height][width];
+        fillMetalAlloy(combinedPartition);
+        for (int i = 0; i < 100; i++) {
+            MetalAlloy alloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, true);
+            MetalCell[][] leftPartition = alloy.callLeftPartition();
+            MetalCell[][] rightPartition = alloy.callServer();
+            combinedPartition = alloy.mergePartitions(leftPartition, rightPartition);
+            System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
+                    .replace("],", "\n").replace(",", "\t| ")
+                    .replaceAll("[\\[\\]]", " "));
+        }
     }
 
     /**
@@ -69,9 +70,9 @@ public class MetalDecomposition {
 //        HC2_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
 //        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
 
-        HC1_PERCENTAGE = .33;
+        HC1_PERCENTAGE = .34;
         HC2_PERCENTAGE = .33;
-        HC3_PERCENTAGE = .34;
+        HC3_PERCENTAGE = .33;
     }
 
     /**
