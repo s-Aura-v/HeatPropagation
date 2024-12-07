@@ -1,3 +1,5 @@
+package serverBased;
+
 import java.io.Serializable;
 
 public class MetalCell implements Serializable {

@@ -1,10 +1,6 @@
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+package localmachine;
+
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class MetalDecomposition {
 
@@ -27,19 +23,10 @@ public class MetalDecomposition {
 
     public static void main(String[] args) {
         System.out.println("HEAT_DECOMPOSITION");
-        boolean local = false;
-        if (local) {
-            MetalCell[][] metalAlloy = new MetalCell[height][width];
-            fillMetalAlloy(metalAlloy);
-            MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
-            alloy.compute();
-        } else {
-            MetalCell[][] metalAlloy = new MetalCell[height][width];
-            fillMetalAlloy(metalAlloy);
-            MetalCell[][] finalMetalAlloy = copyMetalAlloy(metalAlloy);
-            MetalAlloy serverAlloy = new MetalAlloy(metalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, true);
-            serverAlloy.run();
-        }
+        MetalCell[][] metalAlloy = new MetalCell[height][width];
+        fillMetalAlloy(metalAlloy);
+        MetalAlloy alloy = new MetalAlloy(metalAlloy, topLeftTemperature_S, bottomRightTemperature_T);
+        alloy.compute();
     }
 
     /**

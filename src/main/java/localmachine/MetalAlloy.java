@@ -1,15 +1,11 @@
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+package localmachine;
+
 import java.io.Serializable;
-import java.net.Socket;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ForkJoinTask;
-import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
+public class MetalAlloy implements Serializable {
     MetalCell[][] originalMetalAlloy;
     MetalCell[][] finalMetalAlloy;
     double topLeftTemperature_S;
@@ -67,62 +63,6 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
         rightTask.join();
         double endTime = System.currentTimeMillis();
         System.out.println(endTime - startTime + "ms");
-    }
-
-
-    /**
-     * The calculation will be completed in TWO MACHINES; SERVER <-> LOCAL MACHINE
-     * The server will do the right partition while the machine will do the left partition.
-     */
-    public void run() {
-        if (leftPartition) {
-            sendToServer();
-            heatLeftPartition();
-        } else {
-            heatRightPartition();
-        }
-    }
-
-    /**
-     * FinalMetalAlloy is the returned so that it can be worked on again
-     * This is used by Callable<MetalCell[][]>
-     */
-    @Override
-    public MetalCell[][] call() throws Exception {
-        if (leftPartition) {
-            sendToServer();
-            heatLeftPartition();
-        } else {
-            heatRightPartition();
-            return finalMetalAlloy;
-        }
-
-        return finalMetalAlloy;
-    }
-
-    void sendToServer() {
-        try {
-            Socket socket = new Socket("localhost", 1998);
-
-            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-
-            outputStream.writeObject(finalMetalAlloy);
-
-            //TODO: Implement this later where I can get the data back from the server
-//            MetalCell[][] serverFinalMetal = (MetalCell[][]) inputStream.readObject();
-//            System.out.println(inputStream.readObject());
-
-            outputStream.close();
-            inputStream.close();
-            socket.close();
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-//        } catch (ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
-        }
     }
 
     /**
@@ -213,12 +153,6 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
         }
         System.out.println("Right Partition: ");
         debug();
-    }
-
-    void redoEdges(int partitionWidth) {
-        for (int i = 0; i < originalMetalAlloy.length; i++) {
-
-        }
     }
 
     /**
@@ -351,19 +285,6 @@ public class MetalAlloy implements Serializable, Callable<MetalCell[][]> {
         }
         return copiedMetalAlloy;
     }
-
-    MetalCell[][] mergePartitions(MetalCell[][] leftPartition, MetalCell[][] rightPartition) {
-        MetalCell[][] merged = new MetalCell[leftPartition.length][leftPartition[0].length];
-        int midpoint = leftPartition[0].length / 2;
-        for (int i = 0; i < leftPartition.length; i++) {
-            for (int j = 0; j < midpoint; j++) {
-                merged[i][j] = leftPartition[i][j];
-                merged[i][j+midpoint] = rightPartition[i][j+midpoint];
-            }
-        }
-        return merged;
-    }
-
 
     void debug() {
         System.out.println("Final Representation of MetalAlloy\n" + Arrays.deepToString(finalMetalAlloy)

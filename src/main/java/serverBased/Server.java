@@ -1,9 +1,13 @@
-import java.io.*;
-import java.net.*;
+package serverBased;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
 /**
@@ -21,19 +25,22 @@ public class Server {
                 ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
                 ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 
-                // Read the object from the client
-                MetalCell[][] receivedObject = (MetalCell[][]) inputStream.readObject();
-                double topLeftTemperature_S = receivedObject[0][0].getTemperature();
-                double bottomRightTemperature_T = receivedObject[receivedObject.length - 1][receivedObject[0].length - 1].getTemperature();
-                MetalAlloy metalAlloy = new MetalAlloy(receivedObject, receivedObject, topLeftTemperature_S, bottomRightTemperature_T, false);
-                ExecutorService executorService = Executors.newCachedThreadPool();
+                // MetalAlloy Setup
+                MetalCell[][] originalMetalAlloy = (MetalCell[][]) inputStream.readObject();
+                double topLeftTemperature_S = originalMetalAlloy[0][0].getTemperature();
+                double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
+                MetalCell[][] finalMetalAlloy = MetalDecomposition.copyMetalAlloy(originalMetalAlloy);
+                MetalAlloy metalAlloy = new MetalAlloy(originalMetalAlloy, finalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, false);
+
+                // Executing right partition
+                ExecutorService executorService = Executors.newSingleThreadExecutor();
                 Future<MetalCell[][]> metalAlloyFuture = executorService.submit(metalAlloy);
-                MetalCell[][] finalMetalAlloy = metalAlloyFuture.get();
+                MetalCell[][] calculatedMetalAlloy = metalAlloyFuture.get();
                 System.out.println("Received: \n" + Arrays.deepToString(finalMetalAlloy)
                         .replace("],", "\n").replace(",", "\t| ")
                         .replaceAll("[\\[\\]]", " "));
 
-                outputStream.writeObject(finalMetalAlloy);
+//                outputStream.writeObject(finalMetalAlloy);
 
                 executorService.shutdown();
                 outputStream.flush();  // Make sure data is sent
