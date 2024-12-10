@@ -9,11 +9,9 @@ import static serverBased.MetalDecomposition.fillMetalAlloy;
 public class HeatVisualizer {
     int FRAME_HEIGHT = 600;
     int FRAME_WIDTH = 1200;
-    int NUM_ROWS = 4;
-    int NUM_COLS = 16;
     JFrame frame = new JFrame("Heat Visualizer");
-    JPanel bottomPanel = new JPanel(new GridLayout(NUM_ROWS, NUM_COLS));
-    JPanel[][] panelGrid = new JPanel[NUM_ROWS][NUM_COLS];
+    JPanel bottomPanel;
+    JPanel[][] panelGrid;
     static double HEAT_CONSTANT_1 = .75;
     static double HEAT_CONSTANT_2 = 1.0;
     static double HEAT_CONSTANT_3 = 1.25;
@@ -69,6 +67,7 @@ public class HeatVisualizer {
         topPanel.add(submitParameters);
         topPanel.setPreferredSize(new Dimension(frame.getWidth(), 90));
         frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        bottomPanel = new JPanel();
 
         submitParameters.addActionListener(e -> {
             // Get the parameters from the text fields
@@ -79,6 +78,10 @@ public class HeatVisualizer {
             width = height * 4;
             topLeftTemperature_S = Integer.parseInt(topLeftTemperature_S_parameter.getText());
             bottomRightTemperature_T = Integer.parseInt(bottomRightTemperature_T_parameter.getText());
+            bottomPanel = new JPanel(new GridLayout(height, width));
+            panelGrid = new JPanel[height][width];
+            createMetalRepresentation();
+            frame.add(bottomPanel, BorderLayout.CENTER);
 
             // You need to run the start method in a separate thread because the Java Swing Thread is ALWAYS busy updating the gui
             new Thread(() -> {
@@ -89,26 +92,28 @@ public class HeatVisualizer {
                 }
             }).start();
         });
-        createMetalRepresentation();
-
         frame.setResizable(false);
         frame.add(topPanel, BorderLayout.NORTH);
-        frame.add(bottomPanel, BorderLayout.CENTER);
         frame.setVisible(true);
     }
 
     void createMetalRepresentation() {
-        for (int i = 0; i < NUM_ROWS; i++) {
-            for (int j = 0; j < NUM_COLS; j++) {
+        if (bottomPanel == null || panelGrid == null) {
+            return;
+        }
+        bottomPanel.removeAll(); // Clear previous panels, if any
+        for (int i = 0; i < panelGrid.length; i++) {
+            for (int j = 0; j < panelGrid[i].length; j++) {
                 panelGrid[i][j] = new JPanel();
                 bottomPanel.add(panelGrid[i][j]);
             }
         }
     }
 
+
     public void updateGrid(MetalCell[][] metalAlloy) {
-        for (int i = 0; i < NUM_ROWS; i++) {
-            for (int j = 0; j < NUM_COLS; j++) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
                 double temperature = metalAlloy[i][j].getTemperature();
                 Color color = getColorBasedOnTemperature(temperature);
                 panelGrid[i][j].setBackground(color);
@@ -119,8 +124,13 @@ public class HeatVisualizer {
     }
 
     private Color getColorBasedOnTemperature(double temperature) {
-        int maxTemp = 100;
+        int maxTemp = 0;
         int minTemp = 0;
+        if (topLeftTemperature_S > bottomRightTemperature_T) {
+            maxTemp = topLeftTemperature_S;
+        } else {
+            maxTemp = bottomRightTemperature_T;
+        }
 
         // Map temperature to a range of 0-255
         int red = (int) Math.min(255, (temperature - minTemp) / (maxTemp - minTemp) * 255);
@@ -141,7 +151,7 @@ public class HeatVisualizer {
                     .replace("],", "\n").replace(",", "\t| ")
                     .replaceAll("[\\[\\]]", " "));
             updateGrid(combinedPartition);
-            Thread.sleep(150);
+            Thread.sleep(50);
         }
     }
 }

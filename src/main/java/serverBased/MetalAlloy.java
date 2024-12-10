@@ -162,12 +162,6 @@ public class MetalAlloy implements Serializable {
         return rightPartitionCopy;
     }
 
-    void redoEdges(int partitionWidth) {
-        for (int i = 0; i < originalMetalAlloy.length; i++) {
-
-        }
-    }
-
     /**
      * Calculates Sum(n=1 to #ofNeighbors) of (temp_n * p_n_m)
      * Or, calculates the temperature of the neighbors with respect to metal M's heat constant

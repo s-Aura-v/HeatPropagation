@@ -1,6 +1,7 @@
 package serverBased;
 
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static serverBased.HeatVisualizer.*;
 
@@ -8,6 +9,7 @@ import static serverBased.HeatVisualizer.*;
 public class MetalDecomposition {
     static int PORT = 1998;
     static boolean SHOULD_COMPUTE_LEFT = false;
+//    static String SERVER_HOST = "gee.cs.oswego.edu";
     static String SERVER_HOST = "localhost";
 
     public static void main(String[] args) throws InterruptedException {
@@ -41,12 +43,12 @@ public class MetalDecomposition {
     /**
      * Calculates the composition of MetalCell.
      * Each MetalCell is made up of three metals, taking up ~33% of the metal, with a 20% margin of error.
+     * The randomization of metal alloy has been commented out due to the formula's inability to account for different  metal types.
      */
     static void calculateHeatConstantProportion() {
 //        HC1_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
 //        HC2_PERCENTAGE = ThreadLocalRandom.current().nextDouble((METAL_PERCENTAGE * 0.8), (METAL_PERCENTAGE * 1.2));
 //        HC3_PERCENTAGE = 100 - HC1_PERCENTAGE - HC2_PERCENTAGE;
-
         HC1_PERCENTAGE = .34;
         HC2_PERCENTAGE = .33;
         HC3_PERCENTAGE = .33;

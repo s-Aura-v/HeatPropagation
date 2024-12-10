@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLOutput;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,7 +13,7 @@ import java.util.concurrent.Future;
 
 
 /**
- * Calculate the right partition work in a server and send it back to local machine
+ * Calculate the right partition in a server and send it back to local machine to be merged.
  * The server should be running in the background before you MetalDecomposition as the results of the latter is dependent on that of the execution of former.
  */
 public class Server {
@@ -20,6 +21,7 @@ public class Server {
         try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
 
             while (true) {
+                System.out.println("Waiting for connection");
                 Socket clientSocket = serverSocket.accept();
 
                 ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
