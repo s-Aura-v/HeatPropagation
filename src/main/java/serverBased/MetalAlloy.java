@@ -9,13 +9,16 @@ import java.util.Arrays;
 
 public class MetalAlloy implements Serializable {
     MetalCell[][] originalMetalAlloy;
+    MetalCell[][] editedMetalAlloy;
     double topLeftTemperature_S;
     double bottomRightTemperature_T;
     int partitionWidth;
     boolean shouldComputeLeft;
+    double[] edges;
 
     public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft) {
         this.originalMetalAlloy = metalAlloy;
+        this.editedMetalAlloy = copyMetalAlloy(metalAlloy);
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
         this.shouldComputeLeft = shouldComputeLeft;
@@ -49,6 +52,7 @@ public class MetalAlloy implements Serializable {
      */
     public MetalCell[][] callServer() {
         MetalCell[][] serverFinalMetal = new MetalCell[0][0];
+        edges = new double[originalMetalAlloy.length];
         try {
             Socket socket = new Socket(MetalDecomposition.SERVER_HOST, 1998);
 
@@ -108,13 +112,13 @@ public class MetalAlloy implements Serializable {
                 }
                 // ADDING THE SUMMATION TO THE CELL
                 if ((i == 0 && j == 0)) {
-                    metalAlloyCopy[i][j].setTemperature(topLeftTemperature_S);
+                    editedMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
                 } else {
-                    metalAlloyCopy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                    editedMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                 }
             }
         }
-        return metalAlloyCopy;
+        return editedMetalAlloy;
     }
 
     /**
@@ -151,6 +155,41 @@ public class MetalAlloy implements Serializable {
             }
         }
         return rightPartitionCopy;
+    }
+
+    /**
+     * Fetch the edges so that it can be sent to the server and retrieved from the server
+     *
+     * @param shouldComputeLeft - if true, grab left partition edges; else grab right partition edges
+     */
+    void getEdges(boolean shouldComputeLeft) {
+        if (shouldComputeLeft) {
+            int x = partitionWidth - 1;
+            for (int y = 0; y < originalMetalAlloy.length; y++) {
+                edges[y] = editedMetalAlloy[x][y].getTemperature();
+            }
+        } else {
+            for (int y = 0; y < originalMetalAlloy.length; y++) {
+                edges[y] = editedMetalAlloy[partitionWidth][y].getTemperature();
+            }
+        }
+    }
+
+    /** Once the edges have been fetched, add it to the correct partition so that it can calculate the temperature correctly
+     *
+     * @param shouldComputeLeft - if true, merge edges with left partition locally; else merge edges right partition in server
+     */
+    void addEdges(boolean shouldComputeLeft) {
+        if (shouldComputeLeft) {
+            int x = partitionWidth - 1;
+            for (int y = 0; y < originalMetalAlloy.length; y++) {
+                editedMetalAlloy[x][y].setTemperature(edges[y]);
+            }
+        } else {
+            for (int y = 0; y < originalMetalAlloy.length; y++) {
+                editedMetalAlloy[partitionWidth][y].setTemperature(edges[y]);
+            }
+        }
     }
 
     /**

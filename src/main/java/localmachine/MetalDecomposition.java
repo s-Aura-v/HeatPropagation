@@ -1,19 +1,20 @@
 package localmachine;
 
+import serverBased.HeatVisualizer;
+
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MetalDecomposition {
 
     public static final boolean debug = true;
-
     static final double HEATCONSTANT_1 = .75;
     static final double HEATCONSTANT_2 = 1.0;
     static final double HEATCONSTANT_3 = 1.25;
     static double HC1_PERCENTAGE;
     static double HC2_PERCENTAGE;
     static double HC3_PERCENTAGE;
-    static final int height = 8;
+    static final int height = 4;
     static final int width = height * 4;
     static final int topLeftTemperature_S = 100;
     static final int bottomRightTemperature_T = 100;
@@ -52,7 +53,6 @@ public class MetalDecomposition {
         }
         return copiedMetalAlloy;
     }
-
 
     /**
      * Applying a 20% margin of error in the metal count in the array

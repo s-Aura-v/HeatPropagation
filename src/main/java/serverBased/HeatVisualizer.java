@@ -151,7 +151,7 @@ public class HeatVisualizer {
 //                    .replace("],", "\n").replace(",", "\t| ")
 //                    .replaceAll("[\\[\\]]", " "));
             updateGrid(combinedPartition);
-//            Thread.sleep(50);
+            Thread.sleep(75);
         }
     }
 }

@@ -27,6 +27,9 @@ Lastly, this product should be implemented with a server connection.
 1. Run Server.java 
 2. Run MetalDecomposition
 
+## Future Lessons
+1. If dealing with relaxation problems, have a structure to store your new values while retrieving data from the original dataset.
+2. If you follow step 1, then you can use threads to break apart a problem by rows/columns. 
 
 ## Resources:
 1. https://gee.cs.oswego.edu/dl/csc375/a3V2.html

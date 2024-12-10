@@ -17,15 +17,19 @@ import java.util.concurrent.Future;
  * The server should be running in the background before you MetalDecomposition as the results of the latter is dependent on that of the execution of former.
  */
 public class Server {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        ObjectInputStream inputStream = null;
+        ObjectOutputStream outputStream = null;
+        Socket clientSocket = null;
+        double[] edges = new double[HeatVisualizer.height];
         try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
 
             while (true) {
                 System.out.println("Waiting for connection");
-                Socket clientSocket = serverSocket.accept();
+                clientSocket = serverSocket.accept();
 
-                ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
-                ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+                inputStream = new ObjectInputStream(clientSocket.getInputStream());
+                outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 
                 // MetalAlloy Setup
                 MetalCell[][] originalMetalAlloy = (MetalCell[][]) inputStream.readObject();
@@ -33,19 +37,28 @@ public class Server {
                 double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
                 MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, MetalDecomposition.SHOULD_COMPUTE_LEFT);
 
-                // Executing right partition
+//                ExecutorService executorService = Executors.newFixedThreadPool(5);
+//                Future<MetalCell[][]> futureMetalValue = executorService.submit(alloy::callRightPartition);
+
+//                 Executing right partition
                 MetalCell[][] rightPartition = alloy.callRightPartition();
 
                 outputStream.writeObject(rightPartition);
-                outputStream.flush();
-                inputStream.close();
-                outputStream.close();
-                clientSocket.close();
             }
+
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        outputStream.flush();
+        inputStream.close();
+        outputStream.close();
+        clientSocket.close();
+    }
+
+    void fillRightEdges(MetalCell[][] metalAlloy) {
+
+
     }
 }
