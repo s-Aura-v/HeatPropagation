@@ -2,36 +2,17 @@ package serverBased;
 
 import java.util.Arrays;
 
-public class MetalDecomposition {
+import static serverBased.HeatVisualizer.*;
 
-    static final double HEAT_CONSTANT_1 = .75;
-    static final double HEAT_CONSTANT_2 = 1.0;
-    static final double HEAT_CONSTANT_3 = 1.25;
-    static double HC1_PERCENTAGE;
-    static double HC2_PERCENTAGE;
-    static double HC3_PERCENTAGE;
-    static final int height = 4;
-    static final int width = height * 4;
-    static final int topLeftTemperature_S = 100;
-    static final int bottomRightTemperature_T = 100;
-    static final double METAL_PERCENTAGE = .33;
+
+public class MetalDecomposition {
     static int PORT = 1998;
     static boolean SHOULD_COMPUTE_LEFT = false;
     static String SERVER_HOST = "localhost";
 
-    public static void main(String[] args) {
-        System.out.println("HEAT_DECOMPOSITION");
-        MetalCell[][] combinedPartition = new MetalCell[height][width];
-        fillMetalAlloy(combinedPartition);
-        for (int i = 0; i < 100; i++) {
-            MetalAlloy alloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, true);
-            MetalCell[][] leftPartition = alloy.callLeftPartition();
-            MetalCell[][] rightPartition = alloy.callServer();
-            combinedPartition = alloy.mergePartitions(leftPartition, rightPartition);
-            System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-        }
+    public static void main(String[] args) throws InterruptedException {
+        HeatVisualizer heatVisualizer = new HeatVisualizer();
+        heatVisualizer.setup();
     }
 
     /**
@@ -79,14 +60,14 @@ public class MetalDecomposition {
      * The values represented are PERCENT OF METAL in a cell, not HEAT CONSTANT itself.
      *
      * @param metalAlloy - the 2d array of Metal Cells with no instantiated values
-     * No return type as the changes to the Metal Alloy is not local.
-     * <p>
-     * Visualization of Metal Alloy :
-     * [HeatConstant1% ;; HeatConstant2% ;; HeatConstant3%]
-     * 30;;26;;44	|  34;;29;;37	|  34;;34;;32	|  34;;32;;34	|  33;;37;;30	|  35;;26;;39	|  28;;26;;46	|  27;;37;;36
-     * 36;;35;;29	|  35;;34;;31	|  35;;27;;38	|  29;;37;;34	|  26;;36;;38	|  29;;28;;43	|  29;;32;;39	|  28;;34;;38
-     * 35;;38;;27	|  27;;28;;45	|  37;;35;;28	|  36;;34;;30	|  33;;34;;33	|  32;;33;;35	|  38;;35;;27	|  32;;36;;32
-     * 35;;38;;27	|  36;;33;;31	|  27;;38;;35	|  27;;31;;42	|  33;;36;;31	|  30;;35;;35	|  37;;28;;35	|  28;;38;;34
+     *                   No return type as the changes to the Metal Alloy is not local.
+     *                   <p>
+     *                   Visualization of Metal Alloy :
+     *                   [HeatConstant1% ;; HeatConstant2% ;; HeatConstant3%]
+     *                   30;;26;;44	|  34;;29;;37	|  34;;34;;32	|  34;;32;;34	|  33;;37;;30	|  35;;26;;39	|  28;;26;;46	|  27;;37;;36
+     *                   36;;35;;29	|  35;;34;;31	|  35;;27;;38	|  29;;37;;34	|  26;;36;;38	|  29;;28;;43	|  29;;32;;39	|  28;;34;;38
+     *                   35;;38;;27	|  27;;28;;45	|  37;;35;;28	|  36;;34;;30	|  33;;34;;33	|  32;;33;;35	|  38;;35;;27	|  32;;36;;32
+     *                   35;;38;;27	|  36;;33;;31	|  27;;38;;35	|  27;;31;;42	|  33;;36;;31	|  30;;35;;35	|  37;;28;;35	|  28;;38;;34
      */
     static void fillMetalAlloy(MetalCell[][] metalAlloy) {
         for (int columnIndex = 0; columnIndex < metalAlloy[0].length; columnIndex++) {

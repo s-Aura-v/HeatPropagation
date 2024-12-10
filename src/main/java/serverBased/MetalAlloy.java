@@ -159,7 +159,6 @@ public class MetalAlloy implements Serializable {
                 }
             }
         }
-        System.out.println("Right Partition: ");
         return rightPartitionCopy;
     }
 

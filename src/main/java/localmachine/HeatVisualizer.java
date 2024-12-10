@@ -2,6 +2,7 @@ package localmachine;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 public class HeatVisualizer {
 
@@ -51,7 +52,8 @@ public class HeatVisualizer {
 
     JPanel createMetalRepresentation() {
         JPanel bottomPanel = new JPanel();
-//        g.drawRect(0, 0, bottomPanel.getWidth(), bottomPanel.getHeight());
+        int width = bottomPanel.getPreferredSize().width;
+        int height = bottomPanel.getPreferredSize().height;
 
         return bottomPanel;
     }
@@ -60,5 +62,6 @@ public class HeatVisualizer {
         HeatVisualizer heatVisualizer = new HeatVisualizer();
         heatVisualizer.setup();
     }
+
 }
 
