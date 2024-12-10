@@ -24,7 +24,6 @@ public class HeatVisualizer {
     static int bottomRightTemperature_T = 100;
     static double METAL_PERCENTAGE = .33;
 
-
     void setup() {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -142,14 +141,14 @@ public class HeatVisualizer {
     public void start() throws InterruptedException {
         MetalCell[][] combinedPartition = new MetalCell[height][width];
         fillMetalAlloy(combinedPartition);
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 18; i++) {
             MetalAlloy alloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, true);
             MetalCell[][] leftPartition = alloy.callLeftPartition();
             MetalCell[][] rightPartition = alloy.callServer();
             combinedPartition = alloy.mergePartitions(leftPartition, rightPartition);
-//            System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
-//                    .replace("],", "\n").replace(",", "\t| ")
-//                    .replaceAll("[\\[\\]]", " "));
+            System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
+                    .replace("],", "\n").replace(",", "\t| ")
+                    .replaceAll("[\\[\\]]", " "));
             updateGrid(combinedPartition);
             Thread.sleep(75);
         }

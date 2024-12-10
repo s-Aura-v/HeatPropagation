@@ -37,11 +37,9 @@ public class Server {
                 double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
                 MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, MetalDecomposition.SHOULD_COMPUTE_LEFT);
 
-//                ExecutorService executorService = Executors.newFixedThreadPool(5);
-//                Future<MetalCell[][]> futureMetalValue = executorService.submit(alloy::callRightPartition);
-
 //                 Executing right partition
                 MetalCell[][] rightPartition = alloy.callRightPartition();
+                alloy.getEdges(false);
 
                 outputStream.writeObject(rightPartition);
             }
