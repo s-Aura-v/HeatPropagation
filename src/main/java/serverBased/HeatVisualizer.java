@@ -147,11 +147,11 @@ public class HeatVisualizer {
             MetalCell[][] leftPartition = alloy.callLeftPartition();
             MetalCell[][] rightPartition = alloy.callServer();
             combinedPartition = alloy.mergePartitions(leftPartition, rightPartition);
-            System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
+//            System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
+//                    .replace("],", "\n").replace(",", "\t| ")
+//                    .replaceAll("[\\[\\]]", " "));
             updateGrid(combinedPartition);
-            Thread.sleep(50);
+//            Thread.sleep(50);
         }
     }
 }

@@ -29,9 +29,6 @@ public class MetalAlloy implements Serializable {
     public MetalCell[][] callLeftPartition() {
         MetalCell[][] metalAlloy = new MetalCell[0][0];
         metalAlloy = heatLeftPartition(copyMetalAlloy(originalMetalAlloy));
-        System.out.println("Called Left\n" + Arrays.deepToString(metalAlloy)
-                .replace("],", "\n").replace(",", "\t| ")
-                .replaceAll("[\\[\\]]", " "));
         return metalAlloy;
     }
 
@@ -59,16 +56,10 @@ public class MetalAlloy implements Serializable {
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 
             outputStream.writeObject(originalMetalAlloy);
-            System.out.println("Object Written to Server");
+//            System.out.println("Object Written to Server");
 
             serverFinalMetal = (MetalCell[][]) inputStream.readObject();
-            System.out.println("Waiting for Server Output");
-            boolean caughtOutput = false;
-            while (!caughtOutput) {
-                System.out.println(Arrays.deepToString(serverFinalMetal));
-                System.out.println("Server Output Read");
-                caughtOutput = true;
-            }
+//            System.out.println("Waiting for Server Output");
 
             outputStream.close();
             inputStream.close();
