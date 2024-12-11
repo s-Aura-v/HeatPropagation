@@ -18,45 +18,56 @@ import java.util.concurrent.Future;
  */
 public class Server {
     public static void main(String[] args) throws IOException {
-        ObjectInputStream inputStream = null;
-        ObjectOutputStream outputStream = null;
-        Socket clientSocket = null;
-        double[] edges = new double[HeatVisualizer.height];
+        double[] edges;
         try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
+            System.out.println("Waiting for connection");
+            Socket clientSocket = serverSocket.accept();
 
-            while (true) {
-                System.out.println("Waiting for connection");
-                clientSocket = serverSocket.accept();
+            ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+            ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 
-                inputStream = new ObjectInputStream(clientSocket.getInputStream());
-                outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            // MetalAlloy Setup
+            MetalCell[][] originalMetalAlloy = (MetalCell[][]) inputStream.readObject();
+            double topLeftTemperature_S = originalMetalAlloy[0][0].getTemperature();
+            double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
+            MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, MetalDecomposition.SHOULD_COMPUTE_LEFT, MetalDecomposition.ITERATIONS);
+            boolean programRunning = true;
 
-                // MetalAlloy Setup
-                MetalCell[][] originalMetalAlloy = (MetalCell[][]) inputStream.readObject();
-                double topLeftTemperature_S = originalMetalAlloy[0][0].getTemperature();
-                double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
-                MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, MetalDecomposition.SHOULD_COMPUTE_LEFT);
 
-//                 Executing right partition
-                MetalCell[][] rightPartition = alloy.callRightPartition();
-                alloy.getEdges(false);
 
-                outputStream.writeObject(rightPartition);
+
+
+
+
+
+
+
+
+            ExecutorService executorService = Executors.newFixedThreadPool(1);
+//              Executing right partition
+            for (int i = 0; i < MetalDecomposition.ITERATIONS; i++) {
+                // STEP 1: CALCULATE EDGES
+                Future<MetalCell[][]> rightPartition = executorService.submit(alloy);
+                // STEP 2.1: GET EDGES
+                edges = alloy.getEdges();
+                // STEP 2.2: SEND EDGES
+                System.out.println(Arrays.toString(edges));
+
             }
 
-        } catch (IOException | ClassNotFoundException e) {
+            outputStream.flush();
+            inputStream.close();
+            outputStream.close();
+            clientSocket.close();
+
+        } catch (IOException |
+                 ClassNotFoundException e) {
             e.printStackTrace();
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             throw new RuntimeException(e);
         }
-        outputStream.flush();
-        inputStream.close();
-        outputStream.close();
-        clientSocket.close();
-    }
-
-    void fillRightEdges(MetalCell[][] metalAlloy) {
-
 
     }
+
 }

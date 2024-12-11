@@ -1,84 +1,25 @@
 package serverBased;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.Socket;
 import java.util.Arrays;
 
 public class MetalAlloy implements Serializable {
-    MetalCell[][] originalMetalAlloy;
-    MetalCell[][] editedMetalAlloy;
+    MetalCell[][] metalAlloy;
     double topLeftTemperature_S;
     double bottomRightTemperature_T;
     int partitionWidth;
     boolean shouldComputeLeft;
     double[] edges;
+    int ITERATIONS;
 
-    public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft) {
-        this.originalMetalAlloy = metalAlloy;
-        this.editedMetalAlloy = copyMetalAlloy(metalAlloy);
+    public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft, int iterations) {
+        this.metalAlloy = metalAlloy;
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
         this.shouldComputeLeft = shouldComputeLeft;
         this.partitionWidth = metalAlloy[0].length / 2;
-        this.edges = new double[originalMetalAlloy.length];
-    }
-
-    /**
-     * Used to calculate the left partition locally.
-     * @return MetalCell[][] - Sent back to the main method to be merged with RightPartition
-     */
-    public MetalCell[][] callLeftPartition() {
-        MetalCell[][] metalAlloy = new MetalCell[0][0];
-        metalAlloy = heatLeftPartition(copyMetalAlloy(originalMetalAlloy));
-        return metalAlloy;
-    }
-
-    /**
-     * Used to calculate the right partition remotely through a server.
-     * @return MetalCell[][] - Sent back to the main method to be merged with Right Partition
-     */
-    public MetalCell[][] callRightPartition() {
-        MetalCell[][] metalAlloy;
-        metalAlloy = heatRightPartition(copyMetalAlloy(originalMetalAlloy));
-        return metalAlloy;
-    }
-
-    /**
-     * Sends the right partition to the server so it can heat it up, which is sent back locally, to be merged with Left Partition.
-     * @return MetalCell[][] - Sent back to the main method to be merged with Left Partition
-     */
-    public MetalCell[][] callServer() {
-        MetalCell[][] serverFinalMetal = new MetalCell[0][0];
-        edges = new double[originalMetalAlloy.length];
-        try {
-            Socket socket = new Socket(MetalDecomposition.SERVER_HOST, 1998);
-
-            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-
-            // DURING THE FIRST ITERATION, SEND THE ENTIRE OBJECT SO IT CAN CONSTRUCT THE METALALLOY
-            if (edges == null) {
-                outputStream.writeObject(editedMetalAlloy);
-            }
-            // AFTERWARDS, ONLY SEND THE EDGES
-            getEdges(false);
-            outputStream.writeObject(edges);
-//            System.out.println("Object Written to Server");
-
-            serverFinalMetal = (MetalCell[][]) inputStream.readObject();
-//            System.out.println("Waiting for Server Output");
-
-            outputStream.close();
-            inputStream.close();
-            socket.close();
-
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        return serverFinalMetal;
+        this.edges = new double[this.metalAlloy.length];
+        this.ITERATIONS = iterations;
     }
 
     /**
@@ -105,11 +46,11 @@ public class MetalAlloy implements Serializable {
                         continue;
                     }
                     // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
-                    double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantValues(k);
+                    double heatConstant_Cm = metalAlloyCopy[i][j].getHeatConstantValues(k);
                     // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
-                    double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
+                    double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, metalAlloyCopy));
                     // GETTING #ofNeighbors
-                    int neighborCount_N = getNeighborCount(i, j, originalMetalAlloy);
+                    int neighborCount_N = getNeighborCount(i, j, metalAlloyCopy);
                     // SOLVING THE LEFT SIDE OF THE EQUATION
                     double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
                     // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
@@ -118,14 +59,14 @@ public class MetalAlloy implements Serializable {
                 }
                 // ADDING THE SUMMATION TO THE CELL
                 if ((i == 0 && j == 0)) {
-                    editedMetalAlloy[i][j].setTemperature(topLeftTemperature_S);
+                    metalAlloy[i][j].setTemperature(topLeftTemperature_S);
                 } else {
-                    editedMetalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                    metalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                 }
                 saveEdges(true);
             }
         }
-        return editedMetalAlloy;
+        return metalAlloy;
     }
 
     /**
@@ -133,20 +74,20 @@ public class MetalAlloy implements Serializable {
      * Same logic as the method above [heatLeftPartition]
      */
     MetalCell[][] heatRightPartition(MetalCell[][] rightPartitionCopy) {
-        for (int i = originalMetalAlloy.length - 1; i >= 0; i--) {
-            for (int j = originalMetalAlloy[0].length - 1; j >= partitionWidth; j--) {
+        for (int i = rightPartitionCopy.length - 1; i >= 0; i--) {
+            for (int j = rightPartitionCopy[0].length - 1; j >= partitionWidth; j--) {
                 double[] listOfTemperatures = new double[3];
                 for (int k = 0; k < 3; k++) {
                     // DO NOT CHANGE THE TOP LEFT TEMPERATURE; IT'S CONSTANT BECAUSE IT IS HEATING UP THE REST OF THE METAL
-                    if (i == originalMetalAlloy.length - 1 && j == originalMetalAlloy[0].length - 1) {
+                    if (i == rightPartitionCopy.length - 1 && j == rightPartitionCopy[0].length - 1) {
                         continue;
                     }
                     // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
-                    double heatConstant_Cm = originalMetalAlloy[i][j].getHeatConstantValues(k);
+                    double heatConstant_Cm = rightPartitionCopy[i][j].getHeatConstantValues(k);
                     // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
-                    double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, originalMetalAlloy));
+                    double surroundingTemperature_tempN = (getNeighboringTemperature(i, j, k, rightPartitionCopy));
                     // GETTING #ofNeighbors
-                    int neighborCount_N = getNeighborCount(i, j, originalMetalAlloy);
+                    int neighborCount_N = getNeighborCount(i, j, rightPartitionCopy);
                     // SOLVING THE LEFT SIDE OF THE EQUATION
                     double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
                     // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
@@ -154,10 +95,10 @@ public class MetalAlloy implements Serializable {
                     listOfTemperatures[k] = temp;
                 }
                 // ADDING THE SUMMATION TO THE CELL
-                if ((i == rightPartitionCopy.length - 1 && j == rightPartitionCopy[0].length - 1)) {
-                    rightPartitionCopy[i][j].setTemperature(bottomRightTemperature_T);
+                if ((i == metalAlloy.length - 1 && j == metalAlloy[0].length - 1)) {
+                    metalAlloy[i][j].setTemperature(bottomRightTemperature_T);
                 } else {
-                    rightPartitionCopy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
+                    metalAlloy[i][j].setTemperature(Arrays.stream(listOfTemperatures).sum());
                 }
                 saveEdges(false);
             }
@@ -173,31 +114,37 @@ public class MetalAlloy implements Serializable {
     void saveEdges(boolean shouldComputeLeft) {
         if (shouldComputeLeft) {
             int x = partitionWidth - 1;
-            for (int y = 0; y < originalMetalAlloy.length; y++) {
-                edges[y] = editedMetalAlloy[y][x].getTemperature();
+            for (int y = 0; y < metalAlloy.length; y++) {
+                edges[y] = metalAlloy[y][x].getTemperature();
             }
         } else {
-            for (int y = 0; y < originalMetalAlloy.length; y++) {
-                edges[y] = editedMetalAlloy[y][partitionWidth].getTemperature();
+            for (int y = 0; y < metalAlloy.length; y++) {
+                edges[y] = metalAlloy[y][partitionWidth].getTemperature();
             }
         }
     }
 
-    /** Once the edges have been fetched, add it to the correct partition so that it can calculate the temperature correctly
+    /**
+     * Once the edges have been fetched, add it to the correct partition so that it can calculate the temperature correctly
      *
-     * @param shouldComputeLeft - if true, merge edges with left partition locally; else merge edges right partition in server
+     * @param addLeftEdge - if true, merge edges with left partition locally; else merge edges right partition in server
      */
-    void getEdges(boolean shouldComputeLeft) {
-        if (shouldComputeLeft) {
+    MetalCell[][] addEdgeToAlloy(MetalCell[][] partition, double[] edges, boolean addLeftEdge) {
+        if (addLeftEdge) {
             int x = partitionWidth - 1;
-            for (int y = 0; y < originalMetalAlloy.length; y++) {
-                editedMetalAlloy[y][x].setTemperature(edges[y]);
+            for (int y = 0; y < partition.length; y++) {
+                partition[y][x].setTemperature(edges[y]);
             }
         } else {
-            for (int y = 0; y < originalMetalAlloy.length; y++) {
-                editedMetalAlloy[y][partitionWidth].setTemperature(edges[y]);
+            for (int y = 0; y < partition.length; y++) {
+                partition[y][partitionWidth].setTemperature(edges[y]);
             }
         }
+        return partition;
+    }
+
+    double[] getEdges() {
+        return edges;
     }
 
     /**
@@ -346,5 +293,7 @@ public class MetalAlloy implements Serializable {
         return merged;
     }
 
-
+    public MetalCell[][] getMetalAlloy() {
+        return metalAlloy;
+    }
 }

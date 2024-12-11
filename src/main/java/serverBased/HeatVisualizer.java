@@ -96,6 +96,15 @@ public class HeatVisualizer {
         frame.setVisible(true);
     }
 
+    public void start() throws InterruptedException {
+        MetalCell[][] combinedPartition = new MetalCell[height][width];
+        fillMetalAlloy(combinedPartition);
+        MetalAlloy serverAlloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, false, MetalDecomposition.ITERATIONS);
+        MetalAlloy clientAlloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, true, MetalDecomposition.ITERATIONS);
+        Client client = new Client(clientAlloy);
+
+    }
+
     void createMetalRepresentation() {
         if (bottomPanel == null || panelGrid == null) {
             return;
@@ -136,21 +145,5 @@ public class HeatVisualizer {
         int blue = 255 - red;  // Inverse to create a gradient from blue to red
 
         return new Color(red, 0, blue);
-    }
-
-    public void start() throws InterruptedException {
-        MetalCell[][] combinedPartition = new MetalCell[height][width];
-        fillMetalAlloy(combinedPartition);
-        for (int i = 0; i < 18; i++) {
-            MetalAlloy alloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, true);
-            MetalCell[][] leftPartition = alloy.callLeftPartition();
-            MetalCell[][] rightPartition = alloy.callServer();
-            combinedPartition = alloy.mergePartitions(leftPartition, rightPartition);
-            System.out.println("Combined\n" + Arrays.deepToString(combinedPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-            updateGrid(combinedPartition);
-            Thread.sleep(75);
-        }
     }
 }

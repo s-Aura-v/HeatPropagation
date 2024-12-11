@@ -30,6 +30,7 @@ Lastly, this product should be implemented with a server connection.
 ## Future Lessons
 1. If dealing with relaxation problems, have a structure to store your new values while retrieving data from the original dataset.
 2. If you follow step 1, then you can use threads to break apart a problem by rows/columns. 
+3. It might be better to work on the GUI first, especially the start function, then develop the program. 
 
 ## Conversation with Doug Lea
 S:"Hey, if you look at this, the edges seem to be calculated at the same time, so how can I determine the edges if they're dependent on each other"
