@@ -181,4 +181,5 @@ public class HeatVisualizer {
 
         return new Color(red, 0, blue);
     }
+
 }

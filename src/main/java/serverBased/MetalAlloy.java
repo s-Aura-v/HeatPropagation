@@ -148,11 +148,11 @@ public class MetalAlloy implements Serializable {
         if (shouldComputeLeft) {
             int x = partitionWidth - 1;
             for (int y = 0; y < metalAlloy.length; y++) {
-                edges[y] = metalAlloy[y][x];
+                edges[y] = deepCopyMetalCell(metalAlloy[y][x]);
             }
         } else {
             for (int y = 0; y < metalAlloy.length; y++) {
-                edges[y] = metalAlloy[y][partitionWidth];
+                edges[y] = deepCopyMetalCell(metalAlloy[y][partitionWidth]);
             }
         }
     }
@@ -309,6 +309,13 @@ public class MetalAlloy implements Serializable {
             }
         }
         return copiedMetalAlloy;
+    }
+
+    MetalCell deepCopyMetalCell(MetalCell metalCell) {
+        MetalCell cell = new MetalCell(metalCell.getHC1_PERCENTAGE(), metalCell.getHC2_PERCENTAGE(), metalCell.getHC3_PERCENTAGE(),
+                metalCell.getHC1_CONSTANT(), metalCell.getHC2_CONSTANT(), metalCell.getHC3_CONSTANT());
+        cell.setTemperature(metalCell.getTemperature());
+        return cell;
     }
 
     /**

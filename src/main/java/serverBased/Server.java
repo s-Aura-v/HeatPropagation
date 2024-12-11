@@ -27,8 +27,9 @@ public class Server {
         System.out.println("Waiting for connection");
         try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
             Socket clientSocket = serverSocket.accept();
-            ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
             ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+
             System.out.println("Server Setup Complete");
 
             for (int i = 0; i < alloy.ITERATIONS; i++) {
@@ -47,9 +48,10 @@ public class Server {
                 // STEP 4: SEND RIGHT EDGES TO CLIENT
                 System.out.println("Sending edges to client: " + Arrays.toString(edges));
                 outputStream.writeObject(edges);
+                outputStream.flush();
                 // STEP 5: RETRIEVE LEFT EDGES FROM SERVER
                 MetalCell[] leftEdges = (MetalCell[]) inputStream.readObject();
-                System.out.println("Retrieved Edges from Client: " + Arrays.toString(edges));
+                System.out.println("Retrieved Edges from Client: " + Arrays.toString(leftEdges));
                 // STEP 6: ADD LEFT EDGE TO SELF
                 heatedRightPartition = alloy.addEdgeToAlloy(heatedRightPartition, leftEdges, true);
                 // STEP 7: RECALCULATE EDGE TEMP
@@ -67,5 +69,4 @@ public class Server {
             throw new RuntimeException(e);
         }
     }
-
 }
