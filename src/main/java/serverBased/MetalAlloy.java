@@ -103,7 +103,7 @@ public class MetalAlloy implements Serializable {
                 saveEdges(false);
             }
         }
-        return rightPartitionCopy;
+        return metalAlloy;
     }
 
     MetalCell[][] recalculateEdges(MetalCell[][] partition, boolean calculateLeftEdges) {

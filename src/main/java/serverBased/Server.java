@@ -31,10 +31,13 @@ public class Server {
             ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
             System.out.println("Server Setup Complete");
 
-            // STEP 1: GET LEFT PARTITION
+            // STEP 1: GET RIGHT PARTITION
             MetalCell[][] rightPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
-            // STEP 2: CALCULATE LEFT PARTITION
-            MetalCell[][] heatedRightPartition = alloy.heatLeftPartition(rightPartition);
+            // STEP 2: CALCULATE RIGHT PARTITION
+            MetalCell[][] heatedRightPartition = alloy.heatRightPartition(rightPartition);
+            System.out.println("Right\n" + Arrays.deepToString(heatedRightPartition)
+                    .replace("],", "\n").replace(",", "\t| ")
+                    .replaceAll("[\\[\\]]", " "));
             // STEP 3: GET EDGES
             double[] edges = alloy.getEdges();
             // STEP 4: SEND RIGHT EDGES TO CLIENT
@@ -50,7 +53,6 @@ public class Server {
             inputStream.close();
             outputStream.close();
             clientSocket.close();
-
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }

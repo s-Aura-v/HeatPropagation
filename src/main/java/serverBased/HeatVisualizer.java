@@ -5,6 +5,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static serverBased.MetalDecomposition.copyMetalAlloy;
 import static serverBased.MetalDecomposition.fillMetalAlloy;
 
 public class HeatVisualizer {
@@ -100,10 +101,11 @@ public class HeatVisualizer {
     }
 
     public void start() throws InterruptedException, IOException {
-        MetalCell[][] combinedPartition = new MetalCell[height][width];
-        fillMetalAlloy(combinedPartition);
-        MetalAlloy serverAlloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, false, MetalDecomposition.ITERATIONS);
-        MetalAlloy clientAlloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, true, MetalDecomposition.ITERATIONS);
+        MetalCell[][] serverPartition = new MetalCell[height][width];
+        fillMetalAlloy(serverPartition);
+        MetalCell[][] clientPartition = copyMetalAlloy(serverPartition);
+        MetalAlloy serverAlloy = new MetalAlloy(serverPartition, topLeftTemperature_S, bottomRightTemperature_T, false, MetalDecomposition.ITERATIONS);
+        MetalAlloy clientAlloy = new MetalAlloy(clientPartition, topLeftTemperature_S, bottomRightTemperature_T, true, MetalDecomposition.ITERATIONS);
 
         Server server = new Server(serverAlloy);
         Client client = new Client(clientAlloy);

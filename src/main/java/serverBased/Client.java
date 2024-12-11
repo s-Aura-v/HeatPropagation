@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class Client {
     MetalAlloy alloy;
@@ -25,6 +26,10 @@ public class Client {
             MetalCell[][] leftPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
             // STEP 2: CALCULATE LEFT PARTITION
             MetalCell[][] heatedLeftPartition = alloy.heatLeftPartition(leftPartition);
+            System.out.println("Left\n" + Arrays.deepToString(heatedLeftPartition)
+                    .replace("],", "\n").replace(",", "\t| ")
+                    .replaceAll("[\\[\\]]", " "));
+
             // STEP 3: GET EDGES
             double[] edges= alloy.getEdges();
             // STEP 4: SEND LEFT EDGES TO SERVER
