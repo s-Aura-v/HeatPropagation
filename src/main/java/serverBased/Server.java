@@ -45,9 +45,11 @@ public class Server {
                 // STEP 3: GET EDGES
                 MetalCell[] edges = alloy.getEdges();
                 // STEP 4: SEND RIGHT EDGES TO CLIENT
+                System.out.println("Sending edges to client: " + Arrays.toString(edges));
                 outputStream.writeObject(edges);
                 // STEP 5: RETRIEVE LEFT EDGES FROM SERVER
                 MetalCell[] leftEdges = (MetalCell[]) inputStream.readObject();
+                System.out.println("Retrieved Edges from Client: " + Arrays.toString(edges));
                 // STEP 6: ADD LEFT EDGE TO SELF
                 heatedRightPartition = alloy.addEdgeToAlloy(heatedRightPartition, leftEdges, true);
                 // STEP 7: RECALCULATE EDGE TEMP

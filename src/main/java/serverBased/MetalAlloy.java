@@ -130,6 +130,11 @@ public class MetalAlloy implements Serializable {
             }
             // ADDING THE SUMMATION TO THE CELL
             metalAlloy[y][x].setTemperature(Arrays.stream(listOfTemperatures).sum());
+            if (calculateLeftEdges) {
+                System.out.println(metalAlloy[y][x+1].getTemperature());
+            } else {
+                System.out.println(metalAlloy[y][x-1].getTemperature());
+            }
         }
         return metalAlloy;
     }
@@ -161,14 +166,14 @@ public class MetalAlloy implements Serializable {
         if (addLeftEdge) {
             int x = partitionWidth - 1;
             for (int y = 0; y < partition.length; y++) {
-                partition[y][x] = edges[y];
+                metalAlloy[y][x] = edges[y];
             }
         } else {
             for (int y = 0; y < partition.length; y++) {
-                partition[y][partitionWidth] = edges[y];
+                metalAlloy[y][partitionWidth] = edges[y];
             }
         }
-        return partition;
+        return metalAlloy;
     }
 
     MetalCell[] getEdges() {

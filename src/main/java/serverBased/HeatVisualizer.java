@@ -46,7 +46,7 @@ public class HeatVisualizer {
         JTextField heatConstant_3 = new JTextField(5);
         JButton submitParameters = new JButton("Submit");
 
-        alloyLength.setText("8");
+        alloyLength.setText("4");
         topLeftTemperature_S_parameter.setText("100");
         bottomRightTemperature_T_parameter.setText("100");
         heatConstant_1.setText(".75");
