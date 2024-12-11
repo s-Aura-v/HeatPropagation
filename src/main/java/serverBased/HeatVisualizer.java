@@ -104,39 +104,11 @@ public class HeatVisualizer {
         MetalCell[][] serverPartition = new MetalCell[height][width];
         fillMetalAlloy(serverPartition);
         MetalCell[][] clientPartition = copyMetalAlloy(serverPartition);
-        MetalAlloy serverAlloy = new MetalAlloy(serverPartition, topLeftTemperature_S, bottomRightTemperature_T, false, MetalDecomposition.ITERATIONS);
         MetalAlloy clientAlloy = new MetalAlloy(clientPartition, topLeftTemperature_S, bottomRightTemperature_T, true, MetalDecomposition.ITERATIONS);
 
-        Server server = new Server(serverAlloy);
         Client client = new Client(clientAlloy);
 
-        Thread serverThread = new Thread(() -> {
-            try {
-                System.out.println("Starting server...");
-                server.runServer();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
-        Thread clientThread = new Thread(() -> {
-            try {
-                System.out.println("Starting client...");
-                client.runClient();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-        serverThread.start();
-        // SLOWING DONW A BIT TO MAKE SURE SERVER IS UP
-        // TODO: MAKE SURE SERVER IS ON AT ALL TIMES TO REMOVE THIS DELAY...
-        Thread.sleep(2500);
-        clientThread.start();
-
-        // Wait for both threads to complete
-        serverThread.join();
-        clientThread.join();
+        client.runClient();
 
         System.out.println("Server and Client threads completed.");
     }

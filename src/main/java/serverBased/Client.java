@@ -24,6 +24,9 @@ public class Client {
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
             System.out.println("Client Setup Complete");
 
+            // SEND ALLOY
+            outputStream.writeObject(alloy);
+
             for (int i = 0; i < alloy.ITERATIONS; i++) {
                 // STEP 1: GET LEFT PARTITION
                 MetalCell[][] leftPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
@@ -42,18 +45,6 @@ public class Client {
                 outputStream.writeObject(edges);
                 outputStream.flush();
 
-                // STEP 5: RETRIEVE RIGHT EDGES FROM SERVER
-//                CompletableFuture<MetalCell[]> rightEdgesFuture = CompletableFuture.supplyAsync(() -> {
-//                    try {
-//                        return (MetalCell[]) inputStream.readObject();
-//                    } catch (IOException | ClassNotFoundException e) {
-//                        throw new RuntimeException("Error retrieving edges from server", e);
-//                    }
-//                });
-//
-//                // Wait for the server to send the data
-//                MetalCell[] rightEdges = rightEdgesFuture.get(); // This blocks until the data is available
-//                System.out.println("Retrieved edges from server: " + Arrays.toString(rightEdges));
                 MetalCell[] rightEdges = (MetalCell[]) inputStream.readObject();
                 System.out.println("Retrieved Edges from Server: " + Arrays.toString(rightEdges));
 

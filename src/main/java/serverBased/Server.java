@@ -5,11 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLOutput;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 
 /**
@@ -17,18 +13,14 @@ import java.util.concurrent.Future;
  * The server should be running in the background before you MetalDecomposition as the results of the latter is dependent on that of the execution of former.
  */
 public class Server {
-    MetalAlloy alloy;
-
-    public Server(MetalAlloy alloy) {
-        this.alloy = alloy;
-    }
-
     void runServer() throws IOException {
         System.out.println("Waiting for connection");
         try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
             Socket clientSocket = serverSocket.accept();
             ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
             ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+
+            MetalAlloy alloy = (MetalAlloy) inputStream.readObject();
 
             System.out.println("Server Setup Complete");
 
