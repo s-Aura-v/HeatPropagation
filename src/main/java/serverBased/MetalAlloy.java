@@ -5,20 +5,22 @@ import java.util.Arrays;
 
 public class MetalAlloy implements Serializable {
     MetalCell[][] metalAlloy;
+    MetalCell[][] finalMetalAlloy;
     double topLeftTemperature_S;
     double bottomRightTemperature_T;
     int partitionWidth;
     boolean shouldComputeLeft;
-    double[] edges;
+    MetalCell[] edges;
     int ITERATIONS;
 
     public MetalAlloy(MetalCell[][] metalAlloy, double topLeftTemperature_S, double bottomRightTemperature_T, boolean shouldComputeLeft, int iterations) {
         this.metalAlloy = metalAlloy;
+        this.finalMetalAlloy = copyMetalAlloy(metalAlloy);
         this.topLeftTemperature_S = topLeftTemperature_S;
         this.bottomRightTemperature_T = bottomRightTemperature_T;
         this.shouldComputeLeft = shouldComputeLeft;
         this.partitionWidth = metalAlloy[0].length / 2;
-        this.edges = new double[this.metalAlloy.length];
+        this.edges = new MetalCell[this.metalAlloy.length];
         this.ITERATIONS = iterations;
     }
 
@@ -107,12 +109,29 @@ public class MetalAlloy implements Serializable {
     }
 
     MetalCell[][] recalculateEdges(MetalCell[][] partition, boolean calculateLeftEdges) {
+        int x = partitionWidth;
         if (calculateLeftEdges) {
-
-        } else {
-
+            x = partitionWidth - 1;
         }
-        return partition;
+        for (int y = 0; y < partition.length; y++) {
+            double[] listOfTemperatures = new double[3];
+            for (int k = 0; k < 3; k++) {
+                // GETTING Cm [HEAT CONSTANT FOR METAL, THERE SHOULD BE THREE BECAUSE THERE ARE THREE METALS INSIDE A CELL]
+                double heatConstant_Cm = partition[y][x].getHeatConstantValues(k);
+                // GETTING TempN * P_N_M [THE TEMP OF THE NEIGHBORS * THE PERCENT OF METAL IN THE NEIGHBOR ]
+                double surroundingTemperature_tempN = (getNeighboringTemperature(y, x, k, partition));
+                // GETTING #ofNeighbors
+                int neighborCount_N = getNeighborCount(y, x, partition);
+                // SOLVING THE LEFT SIDE OF THE EQUATION
+                double leftSideOfTheEquation = surroundingTemperature_tempN / neighborCount_N;
+                // SOLVING THE ENTIRE EQUATION (EXCLUDING SUMMATION)
+                double temp = heatConstant_Cm * leftSideOfTheEquation;
+                listOfTemperatures[k] = temp;
+            }
+            // ADDING THE SUMMATION TO THE CELL
+            metalAlloy[y][x].setTemperature(Arrays.stream(listOfTemperatures).sum());
+        }
+        return metalAlloy;
     }
 
     /**
@@ -124,11 +143,11 @@ public class MetalAlloy implements Serializable {
         if (shouldComputeLeft) {
             int x = partitionWidth - 1;
             for (int y = 0; y < metalAlloy.length; y++) {
-                edges[y] = metalAlloy[y][x].getTemperature();
+                edges[y] = metalAlloy[y][x];
             }
         } else {
             for (int y = 0; y < metalAlloy.length; y++) {
-                edges[y] = metalAlloy[y][partitionWidth].getTemperature();
+                edges[y] = metalAlloy[y][partitionWidth];
             }
         }
     }
@@ -138,21 +157,21 @@ public class MetalAlloy implements Serializable {
      *
      * @param addLeftEdge - if true, merge edges with left partition locally; else merge edges right partition in server
      */
-    MetalCell[][] addEdgeToAlloy(MetalCell[][] partition, double[] edges, boolean addLeftEdge) {
+    MetalCell[][] addEdgeToAlloy(MetalCell[][] partition, MetalCell[] edges, boolean addLeftEdge) {
         if (addLeftEdge) {
             int x = partitionWidth - 1;
             for (int y = 0; y < partition.length; y++) {
-                partition[y][x].setTemperature(edges[y]);
+                partition[y][x] = edges[y];
             }
         } else {
             for (int y = 0; y < partition.length; y++) {
-                partition[y][partitionWidth].setTemperature(edges[y]);
+                partition[y][partitionWidth] = edges[y];
             }
         }
         return partition;
     }
 
-    double[] getEdges() {
+    MetalCell[] getEdges() {
         return edges;
     }
 

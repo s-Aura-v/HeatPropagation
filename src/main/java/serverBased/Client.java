@@ -22,26 +22,29 @@ public class Client {
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
             System.out.println("Client Setup Complete");
 
-            // STEP 1: GET LEFT PARTITION
-            MetalCell[][] leftPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
-            // STEP 2: CALCULATE LEFT PARTITION
-            MetalCell[][] heatedLeftPartition = alloy.heatLeftPartition(leftPartition);
-            System.out.println("Left\n" + Arrays.deepToString(heatedLeftPartition)
-                    .replace("],", "\n").replace(",", "\t| ")
-                    .replaceAll("[\\[\\]]", " "));
-
-            // STEP 3: GET EDGES
-            double[] edges= alloy.getEdges();
-            // STEP 4: SEND LEFT EDGES TO SERVER
-            outputStream.writeObject(edges);
-            // STEP 5: RETRIEVE RIGHT EDGES FROM SERVER
-            double[] rightEdges = (double[]) inputStream.readObject();
-            // STEP 6: ADD RIGHT EDGE TO SELF
-            heatedLeftPartition = alloy.addEdgeToAlloy(heatedLeftPartition, rightEdges, false);
-            // STEP 7: RECALCULATE EDGE TEMP
-            alloy.recalculateEdges(heatedLeftPartition, true);
-            System.out.println("completed?");
-
+            for (int i = 0; i < alloy.ITERATIONS; i++) {
+                // STEP 1: GET LEFT PARTITION;
+                // NOTE: YOU NEED TO COPY THE ALLOY INSTEAD OF REFERENCING IT. YOU CAN'T OVERRIDE THE ORIGINAL ARRAY OR IT'LL JUST CALCULATE THE TEMP AS IT CHANGES RATHER THAN USING THE TEMPERATURE IT WAS BEFOREHAND.
+                MetalCell[][] leftPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
+                // STEP 2: CALCULATE LEFT PARTITION
+                MetalCell[][] heatedLeftPartition = alloy.heatLeftPartition(leftPartition);
+                System.out.println("Left\n" + Arrays.deepToString(heatedLeftPartition)
+                        .replace("],", "\n").replace(",", "\t| ")
+                        .replaceAll("[\\[\\]]", " "));
+                // STEP 3: GET EDGES
+                MetalCell[] edges = alloy.getEdges();
+                // STEP 4: SEND LEFT EDGES TO SERVER
+                outputStream.writeObject(edges);
+                // STEP 5: RETRIEVE RIGHT EDGES FROM SERVER
+                MetalCell[] rightEdges = (MetalCell[]) inputStream.readObject();
+                // STEP 6: ADD RIGHT EDGE TO SELF
+                heatedLeftPartition = alloy.addEdgeToAlloy(heatedLeftPartition, rightEdges, false);
+                // STEP 7: RECALCULATE EDGE TEMP
+                MetalCell[][] alloyed= alloy.recalculateEdges(heatedLeftPartition, true);
+                System.out.println("LEFT_ALLOYED\n" + Arrays.deepToString(alloyed)
+                        .replace("],", "\n").replace(",", "\t| ")
+                        .replaceAll("[\\[\\]]", " "));
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
