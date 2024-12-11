@@ -17,57 +17,43 @@ import java.util.concurrent.Future;
  * The server should be running in the background before you MetalDecomposition as the results of the latter is dependent on that of the execution of former.
  */
 public class Server {
-    public static void main(String[] args) throws IOException {
-        double[] edges;
-        try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
-            System.out.println("Waiting for connection");
-            Socket clientSocket = serverSocket.accept();
+    MetalAlloy alloy;
 
+    public Server(MetalAlloy alloy) {
+        this.alloy = alloy;
+    }
+
+    void runServer() throws IOException {
+        System.out.println("Waiting for connection");
+        try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
+            Socket clientSocket = serverSocket.accept();
             ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
             ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+            System.out.println("Server Setup Complete");
 
-            // MetalAlloy Setup
-            MetalCell[][] originalMetalAlloy = (MetalCell[][]) inputStream.readObject();
-            double topLeftTemperature_S = originalMetalAlloy[0][0].getTemperature();
-            double bottomRightTemperature_T = originalMetalAlloy[originalMetalAlloy.length - 1][originalMetalAlloy[0].length - 1].getTemperature();
-            MetalAlloy alloy = new MetalAlloy(originalMetalAlloy, topLeftTemperature_S, bottomRightTemperature_T, MetalDecomposition.SHOULD_COMPUTE_LEFT, MetalDecomposition.ITERATIONS);
-            boolean programRunning = true;
-
-
-
-
-
-
-
-
-
-
-
-            ExecutorService executorService = Executors.newFixedThreadPool(1);
-//              Executing right partition
-            for (int i = 0; i < MetalDecomposition.ITERATIONS; i++) {
-                // STEP 1: CALCULATE EDGES
-                Future<MetalCell[][]> rightPartition = executorService.submit(alloy);
-                // STEP 2.1: GET EDGES
-                edges = alloy.getEdges();
-                // STEP 2.2: SEND EDGES
-                System.out.println(Arrays.toString(edges));
-
-            }
+            // STEP 1: GET LEFT PARTITION
+            MetalCell[][] rightPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
+            // STEP 2: CALCULATE LEFT PARTITION
+            MetalCell[][] heatedRightPartition = alloy.heatLeftPartition(rightPartition);
+            // STEP 3: GET EDGES
+            double[] edges = alloy.getEdges();
+            // STEP 4: SEND RIGHT EDGES TO CLIENT
+            outputStream.writeObject(edges);
+            // STEP 5: RETRIEVE LEFT EDGES FROM SERVER
+            double[] leftEdges = (double[]) inputStream.readObject();
+            // STEP 6: ADD LEFT EDGE TO SELF
+            heatedRightPartition = alloy.addEdgeToAlloy(heatedRightPartition, leftEdges, true);
+            // STEP 7: RECALCULATE EDGE TEMP
+            alloy.recalculateEdges(heatedRightPartition, false);
 
             outputStream.flush();
             inputStream.close();
             outputStream.close();
             clientSocket.close();
 
-        } catch (IOException |
-                 ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (
-                Exception e) {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-
     }
 
 }

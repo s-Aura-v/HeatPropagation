@@ -2,6 +2,7 @@ package serverBased;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.util.Arrays;
 
 import static serverBased.MetalDecomposition.fillMetalAlloy;
@@ -88,6 +89,8 @@ public class HeatVisualizer {
                     start();
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
                 }
             }).start();
         });
@@ -96,13 +99,44 @@ public class HeatVisualizer {
         frame.setVisible(true);
     }
 
-    public void start() throws InterruptedException {
+    public void start() throws InterruptedException, IOException {
         MetalCell[][] combinedPartition = new MetalCell[height][width];
         fillMetalAlloy(combinedPartition);
         MetalAlloy serverAlloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, false, MetalDecomposition.ITERATIONS);
         MetalAlloy clientAlloy = new MetalAlloy(combinedPartition, topLeftTemperature_S, bottomRightTemperature_T, true, MetalDecomposition.ITERATIONS);
+
+        Server server = new Server(serverAlloy);
         Client client = new Client(clientAlloy);
 
+        Thread serverThread = new Thread(() -> {
+            try {
+                System.out.println("Starting server...");
+                server.runServer();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+        Thread clientThread = new Thread(() -> {
+            try {
+                System.out.println("Starting client...");
+                client.runClient();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        serverThread.start();
+        // SLOWING DONW A BIT TO MAKE SURE SERVER IS UP
+        // TODO: MAKE SURE SERVER IS ON AT ALL TIMES TO REMOVE THIS DELAY...
+        Thread.sleep(2500);
+        clientThread.start();
+
+        // Wait for both threads to complete
+        serverThread.join();
+        clientThread.join();
+
+        System.out.println("Server and Client threads completed.");
     }
 
     void createMetalRepresentation() {
@@ -117,7 +151,6 @@ public class HeatVisualizer {
             }
         }
     }
-
 
     public void updateGrid(MetalCell[][] metalAlloy) {
         for (int i = 0; i < height; i++) {

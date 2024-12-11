@@ -106,6 +106,15 @@ public class MetalAlloy implements Serializable {
         return rightPartitionCopy;
     }
 
+    MetalCell[][] recalculateEdges(MetalCell[][] partition, boolean calculateLeftEdges) {
+        if (calculateLeftEdges) {
+
+        } else {
+
+        }
+        return partition;
+    }
+
     /**
      * Fetch the edges so that it can be sent to the server and retrieved from the server
      *

@@ -17,8 +17,9 @@ public class Client {
         try {
             // SETUP
             Socket socket = new Socket(MetalDecomposition.SERVER_HOST, MetalDecomposition.PORT);
-            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+            System.out.println("Client Setup Complete");
 
             // STEP 1: GET LEFT PARTITION
             MetalCell[][] leftPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
@@ -33,7 +34,9 @@ public class Client {
             // STEP 6: ADD RIGHT EDGE TO SELF
             heatedLeftPartition = alloy.addEdgeToAlloy(heatedLeftPartition, rightEdges, false);
             // STEP 7: RECALCULATE EDGE TEMP
-            
+            alloy.recalculateEdges(heatedLeftPartition, true);
+            System.out.println("completed?");
+
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -41,39 +44,4 @@ public class Client {
             throw new RuntimeException(e);
         }
     }
-
-//    public MetalCell[][] callServer() {
-//
-//        MetalCell[][] serverFinalMetal = new MetalCell[0][0];
-//        edges = new double[originalMetalAlloy.length];
-//        try {
-//            Socket socket = new Socket(MetalDecomposition.SERVER_HOST, 1998);
-//
-//            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-//            ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-//
-//            // DURING THE FIRST ITERATION, SEND THE ENTIRE OBJECT SO IT CAN CONSTRUCT THE METALALLOY
-//            if (MetalDecomposition.SERVER_HIT == 0) {
-//                outputStream.writeObject(editedMetalAlloy);
-//            }
-//
-//            // AFTERWARDS, ONLY SEND THE EDGES
-//            getEdges();
-//            outputStream.writeObject(edges);
-//
-////            System.out.println("Object Written to Server");
-//
-////            serverFinalMetal = (MetalCell[][]) inputStream.readObject();
-////            System.out.println("Waiting for Server Output");
-//
-//            outputStream.close();
-//            inputStream.close();
-//            socket.close();
-//
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return serverFinalMetal;
-//    }
-
 }
