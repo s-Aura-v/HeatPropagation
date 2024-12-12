@@ -1,9 +1,11 @@
 package serverBased;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class MetalCell implements Serializable {
-    public static final int BUFFER_SIZE = Double.BYTES * 8;
+    @Serial
+    private static final long serialVersionUID = 8746929011788718866L;
 
     double HC1_PERCENTAGE, HC2_PERCENTAGE, HC3_PERCENTAGE;
     double HC1_CONSTANT, HC2_CONSTANT, HC3_CONSTANT;

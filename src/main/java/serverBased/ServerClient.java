@@ -29,49 +29,34 @@ public class ServerClient {
             System.out.println("MetalAlloy Sent");
 
 
-            MetalCell[] cells = new MetalCell[10];
-            for (int i = 0; i < 10; i++) {
-                cells[i] = new MetalCell(.5, .5, .5, .3, .1, .5);
-                cells[i].setTemperature(i);
+            // BYTEBUFFER TEST
+            // END OF TEST
+
+            ByteBuffer cellBuffer = ByteBuffer.allocate(1024);
+            for (int i = 0; i < MetalDecomposition.ITERATIONS; i++) {
+                // STEP 1: GET LEFT PARTITION
+                MetalCell[][] leftPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
+                // STEP 2: CALCULATE LEFT PARTITION
+                MetalCell[][] heatedLeftPartition = alloy.heatLeftPartition(leftPartition);
+                System.out.println("Left\n" + Arrays.deepToString(heatedLeftPartition)
+                        .replace("],", "\n").replace(",", "\t| ")
+                        .replaceAll("[\\[\\]]", " "));
+                // STEP 3: GET EDGES
+                MetalCell[] edges = alloy.getEdges();
+                // STEP 4: SEND EDGES
+                out.writeObject(edges);
+            System.out.println("Sent to Server: " + Arrays.deepToString(edges));
+                out.flush();
+                // STEP 5: GET EDGE FROM SERVER
+                MetalCell[] retrievedCells = new MetalCell[alloy.getMetalAlloy().length];
+                for (int j = 0; j < retrievedCells.length; j++) {
+                    retrievedCells[j] = new MetalCell(cellBuffer.getDouble(), cellBuffer.getDouble(), cellBuffer.getDouble(),
+                            cellBuffer.getDouble(), cellBuffer.getDouble(), cellBuffer.getDouble());
+                    retrievedCells[j].setTemperature(cellBuffer.getDouble());
+                }
+                cellBuffer.clear();
+                System.out.println("Retrieved from Server: " + Arrays.toString(retrievedCells));
             }
-            out.writeObject(cells);
-
-            int cellCount = 10;
-            byte[] cellBytes = new byte[1024];
-
-            // Read cell data
-            int bytesRead = socket.getInputStream().read(cellBytes);
-
-            // Create MetalCell objects from byte array
-            MetalCell[] retrievedCells = new MetalCell[cellCount];
-            for (int i = 0; i < cellCount; i++) {
-                byte[] cellData = Arrays.copyOfRange(cellBytes, i * MetalCell.BUFFER_SIZE, (i + 1) * MetalCell.BUFFER_SIZE);
-                ByteBuffer cellBuffer = ByteBuffer.wrap(cellData);
-
-                retrievedCells[i] = new MetalCell(cellBuffer.getDouble(), cellBuffer.getDouble(), cellBuffer.getDouble(),
-                        cellBuffer.getDouble(), cellBuffer.getDouble(), cellBuffer.getDouble());
-                retrievedCells[i].setTemperature(cellBuffer.getDouble());
-            }
-            System.out.println(Arrays.toString(retrievedCells));
-
-
-            while (true) {
-
-                 /*
-                 // STEP 1: GET LEFT PARTITION
-                 MetalCell[][] leftPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
-                 // STEP 2: CALCULATE LEFT PARTITION
-                 MetalCell[][] heatedLeftPartition = alloy.heatLeftPartition(leftPartition);
-                 System.out.println("Left\n" + Arrays.deepToString(heatedLeftPartition)
-                         .replace("],", "\n").replace(",", "\t| ")
-                         .replaceAll("[\\[\\]]", " "));
-                 // STEP 3: GET EDGES
-                 MetalCell[] edges = alloy.getEdges();
-                  */
-
-            }
-
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

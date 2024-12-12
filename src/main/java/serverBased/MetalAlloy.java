@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class MetalAlloy implements Serializable {
+    private static final long serialVersionUID = 6051714395511505253L;
+
     MetalCell[][] metalAlloy;
     MetalCell[][] finalMetalAlloy;
     double topLeftTemperature_S;

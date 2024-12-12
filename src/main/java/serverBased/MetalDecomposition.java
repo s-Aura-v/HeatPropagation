@@ -7,7 +7,7 @@ import static serverBased.HeatVisualizer.*;
 
 
 public class MetalDecomposition {
-    static int ITERATIONS = 20;
+    static int ITERATIONS = 9;
     static int SERVER_HIT = 0;
 
     static int PORT = 1998;
