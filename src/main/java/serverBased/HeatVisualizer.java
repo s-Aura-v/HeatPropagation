@@ -105,10 +105,8 @@ public class HeatVisualizer {
         fillMetalAlloy(serverPartition);
         MetalCell[][] clientPartition = copyMetalAlloy(serverPartition);
         MetalAlloy clientAlloy = new MetalAlloy(clientPartition, topLeftTemperature_S, bottomRightTemperature_T, true, MetalDecomposition.ITERATIONS);
-
-        Client client = new Client(clientAlloy);
-
-        client.runClient();
+        ServerClient serverClient = new ServerClient(clientAlloy);
+        serverClient.clientRun();
 
         System.out.println("Server and Client threads completed.");
     }

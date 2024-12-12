@@ -1,63 +1,49 @@
 package serverBased;
 
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-
-/**
- * Calculate the right partition in a server and send it back to local machine to be merged.
- * The server should be running in the background before you MetalDecomposition as the results of the latter is dependent on that of the execution of former.
- */
 public class Server {
-    void runServer() throws IOException {
+    public static void main(String[] args) {
         System.out.println("Waiting for connection");
         try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
-            Socket clientSocket = serverSocket.accept();
-            ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
-            ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+            Socket socket = serverSocket.accept();
 
-            MetalAlloy alloy = (MetalAlloy) inputStream.readObject();
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 
-            System.out.println("Server Setup Complete");
+            MetalAlloy alloy = (MetalAlloy) ois.readObject();
+            System.out.println(Arrays.deepToString(alloy.getMetalAlloy()));
 
-            for (int i = 0; i < alloy.ITERATIONS; i++) {
-                // STEP 1: GET RIGHT PARTITION
-                MetalCell[][] rightPartition = alloy.copyMetalAlloy(alloy.getMetalAlloy());
-                System.out.println("RIGHT INITIAL\n" + Arrays.deepToString(rightPartition)
-                        .replace("],", "\n").replace(",", "\t| ")
-                        .replaceAll("[\\[\\]]", " "));
-                // STEP 2: CALCULATE RIGHT PARTITION
-                MetalCell[][] heatedRightPartition = alloy.heatRightPartition(rightPartition);
-                System.out.println("Right\n" + Arrays.deepToString(heatedRightPartition)
-                        .replace("],", "\n").replace(",", "\t| ")
-                        .replaceAll("[\\[\\]]", " "));
-                // STEP 3: GET EDGES
-                MetalCell[] edges = alloy.getEdges();
-                // STEP 4: SEND RIGHT EDGES TO CLIENT
-                System.out.println("Sending edges to client: " + Arrays.toString(edges));
-                outputStream.writeObject(edges);
-                outputStream.flush();
-                // STEP 5: RETRIEVE LEFT EDGES FROM SERVER
-                MetalCell[] leftEdges = (MetalCell[]) inputStream.readObject();
-                System.out.println("Retrieved Edges from Client: " + Arrays.toString(leftEdges));
-                // STEP 6: ADD LEFT EDGE TO SELF
-                heatedRightPartition = alloy.addEdgeToAlloy(heatedRightPartition, leftEdges, true);
-                // STEP 7: RECALCULATE EDGE TEMP
-                MetalCell[][] alloyed = alloy.recalculateEdges(heatedRightPartition, false);
-                System.out.println("ALLOYED\n" + Arrays.deepToString(alloyed)
-                        .replace("],", "\n").replace(",", "\t| ")
-                        .replaceAll("[\\[\\]]", " "));
+
+            MetalCell[] edges = (MetalCell[]) ois.readObject();
+            System.out.println(Arrays.toString(edges));
+
+            MetalCell[] cells = new MetalCell[10];
+            for (int i = cells.length - 1; i >= 0; i--) {
+                cells[i] = new MetalCell(.5,.5,.5,.3,.1,.5);
+                cells[i].setTemperature(100);
             }
 
-            outputStream.flush();
-            inputStream.close();
-            outputStream.close();
-            clientSocket.close();
-        } catch (ClassNotFoundException e) {
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            buffer.putDouble(cells[0].getHC1_PERCENTAGE());
+            buffer.putDouble(cells[0].getHC2_PERCENTAGE());
+            buffer.putDouble(cells[0].getHC3_PERCENTAGE());
+            buffer.putDouble(cells[0].getHC1_CONSTANT());
+            buffer.putDouble(cells[0].getHC2_CONSTANT());
+            buffer.putDouble(cells[0].getHC3_CONSTANT());
+            buffer.putDouble(cells[6].getTemperature());
+
+            socket.getOutputStream().write(buffer.array());
+
+
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
