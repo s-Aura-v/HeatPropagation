@@ -14,7 +14,6 @@ public class Server {
         System.out.println("Waiting for connection");
         try (ServerSocket serverSocket = new ServerSocket(MetalDecomposition.PORT)) {
             Socket socket = serverSocket.accept();
-
             ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
             ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 
